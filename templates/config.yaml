@@ -1,0 +1,131 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-conf
+data:
+  redis.conf: |-
+    requirepass {{.Values.password}}
+    bind 0.0.0.0
+    logfile /data/redis-server.log
+---
+apiVersion: v1
+data:
+  console-api.yaml: |-
+    Name: console-api
+    Host: 0.0.0.0
+    Port: 8080
+    Mysql:
+      DataSource: ${MYSQL_DATASOURCE}
+      Debug: true   # set to true to enable "print sql"
+    Cors:
+      AllowOrigin: "*"  # split by comma
+kind: ConfigMap
+metadata:
+  name: console-api-conf
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-initdb-config
+data:
+  initdb.sql: |
+    CREATE DATABASE cute;
+    USE cute;
+
+    CREATE TABLE `bbscan`
+    (
+        `id`         int(11) NOT NULL AUTO_INCREMENT,
+        `alarminfo`  varchar(2000) DEFAULT NULL,
+        `status`     varchar(20)   DEFAULT NULL,
+        `alarm_md5`  varchar(60)   DEFAULT NULL,
+        `uploaddate` varchar(30)   DEFAULT NULL,
+        `enable`     tinyint(1) DEFAULT NULL,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `alarm_md5` (`alarm_md5`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+    CREATE TABLE `brotherdomain`
+    (
+        `id`            int(11) NOT NULL AUTO_INCREMENT,
+        `corpname`      varchar(200) DEFAULT NULL,
+        `subcorpname`   varchar(200) DEFAULT NULL,
+        `rootdomain`    varchar(200) DEFAULT NULL,
+        `taskstartdate` varchar(200) DEFAULT NULL,
+        `owner`         varchar(200) DEFAULT NULL,
+        `taskid`        varchar(200) DEFAULT NULL,
+        `origin`        varchar(200) DEFAULT NULL,
+        `uploaddate`    varchar(200) DEFAULT NULL,
+        `enable`        tinyint(1) DEFAULT NULL,
+        `status`        varchar(200) DEFAULT NULL,
+        `accurate`      varchar(25)  DEFAULT '?',
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `rootdomain` (`rootdomain`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1253206 DEFAULT CHARSET=utf8;
+
+    CREATE TABLE `subdomain`
+    (
+        `id`                int(11) NOT NULL AUTO_INCREMENT,
+        `corpname`          varchar(200) DEFAULT NULL,
+        `subcorpname`       varchar(200) DEFAULT NULL,
+        `parentdomain`      varchar(200) DEFAULT NULL,
+        `taskstartdate`     varchar(200) DEFAULT NULL,
+        `owner`             varchar(200) DEFAULT NULL,
+        `taskid`            varchar(200) DEFAULT NULL,
+        `origin`            varchar(200) DEFAULT NULL,
+        `uploaddate`        varchar(200) DEFAULT NULL,
+        `a_record`          varchar(200) DEFAULT NULL,
+        `webservice`        varchar(200) DEFAULT NULL,
+        `cname_record`      varchar(200) DEFAULT NULL,
+        `mx_record`         varchar(200) DEFAULT NULL,
+        `subdomain`         varchar(200) DEFAULT NULL,
+        `txt_record`        varchar(200) DEFAULT NULL,
+        `record_updatedate` varchar(200) DEFAULT NULL,
+        `enable`            tinyint(1) DEFAULT NULL,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `subdomain_2` (`subdomain`),
+        KEY                 `cname_record` (`cname_record`),
+        KEY                 `corpname` (`corpname`),
+        KEY                 `subcorpname` (`subcorpname`,`parentdomain`),
+        KEY                 `subdomain` (`subdomain`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1965667 DEFAULT CHARSET=utf8;
+
+    CREATE TABLE `mail`
+    (
+        `id`          int(11) NOT NULL AUTO_INCREMENT,
+        `corpname`    varchar(200) DEFAULT NULL,
+        `subcorpname` varchar(200) DEFAULT NULL,
+        `mail`        varchar(200) DEFAULT NULL,
+        `uploaddate`  varchar(200) DEFAULT NULL,
+        `enable`      tinyint(1) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8;
+
+    CREATE TABLE `hostserviceinfo`
+    (
+        `id`                int(11) NOT NULL AUTO_INCREMENT,
+        `address`           varchar(20)  DEFAULT NULL,
+        `port`              varchar(5)   DEFAULT NULL,
+        `service`           varchar(70)  DEFAULT NULL,
+        `state`             varchar(200) DEFAULT NULL,
+        `protocol`          varchar(200) DEFAULT NULL,
+        `product`           varchar(500) DEFAULT NULL,
+        `product_version`   varchar(500) DEFAULT NULL,
+        `product_extrainfo` varchar(500) DEFAULT NULL,
+        `banner`            varchar(500) DEFAULT NULL,
+        `changed`           varchar(10)  DEFAULT NULL,
+        `cpelist`           varchar(500) DEFAULT NULL,
+        `endtime`           varchar(30)  DEFAULT NULL,
+        `owner`             varchar(50)  DEFAULT NULL,
+        `reason`            varchar(50)  DEFAULT NULL,
+        `reason_ip`         varchar(30)  DEFAULT NULL,
+        `reason_ttl`        varchar(30)  DEFAULT NULL,
+        `scripts_results`   blob,
+        `tunnel`            varchar(30)  DEFAULT NULL,
+        `enable`            tinyint(1) DEFAULT NULL,
+        `corpname`          varchar(300) DEFAULT NULL,
+        `subcorpname`       varchar(300) DEFAULT NULL,
+        `target`            varchar(100) DEFAULT NULL,
+        `uploaddate`        varchar(50)  DEFAULT NULL,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `unique_finger_print` (`address`,`port`,`service`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

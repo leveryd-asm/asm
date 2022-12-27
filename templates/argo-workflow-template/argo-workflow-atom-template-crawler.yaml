@@ -1,0 +1,55 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  labels:
+    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+  name: crawler
+spec:
+  templates:
+    - name: katana
+      inputs:
+        parameters:
+          - name: domains
+      outputs: {}
+      script:
+        image: python:3.8
+        command:
+          - python
+        args:
+          - '-u'
+        source: |
+          import json
+          import sys
+          import urllib.parse
+          import urllib.request
+
+          domains = {{`"""{{inputs.parameters.domains}}"""`}}
+
+          url = 'http://crawler-service'  # todo:config
+          for domain in domains.split("\n"):
+            print("%s ok\n" % domain)
+            domain = domain.strip()
+            if domain != "":
+              domain = "http://" + domain
+              request=urllib.request.Request(url, domain.encode())
+              reponse=urllib.request.urlopen(request).read()
+
+          # json.dump(domains.split("\n"), sys.stdout)
+
+    - name: katana-binary
+      inputs:
+        artifacts:
+          - name: domains
+            path: /tmp/domains
+      container:
+        image: projectdiscovery/katana:latest
+        args:
+          - '-v'
+          - '-list'
+          - /tmp/domains
+          - '-proxy'
+          - http://{{.Values.xray_proxy_service}}:{{.Values.xray_proxy_port}}
+  ttlStrategy:
+    secondsAfterCompletion: 3000
+  podGC:
+    strategy: OnPodCompletion

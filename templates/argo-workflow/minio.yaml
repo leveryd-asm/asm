@@ -1,0 +1,128 @@
+# from https://github.com/argoproj/argo-workflows/blob/master/manifests/quick-start-postgres.yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: minio
+  name: minio
+spec:
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - command:
+            - minio
+            - server
+            - --console-address
+            - :9001
+            - /data
+          env:
+            - name: MINIO_ACCESS_KEY
+              value: admin
+            - name: MINIO_SECRET_KEY
+              value: password
+          image: minio/minio
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - mkdir
+                  - -p
+                  - /data/my-bucket
+          livenessProbe:
+            httpGet:
+              path: /minio/health/live
+              port: 9000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          name: main
+          ports:
+            - containerPort: 9000
+              name: api
+            - containerPort: 9001
+              name: dashboard
+          readinessProbe:
+            httpGet:
+              path: /minio/health/ready
+              port: 9000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: postgres
+  name: postgres
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+      name: postgres
+    spec:
+      containers:
+        - env:
+            - name: POSTGRES_PASSWORD
+              value: password
+          image: postgres:12-alpine
+          name: main
+          ports:
+            - containerPort: 5432
+          readinessProbe:
+            exec:
+              command:
+                - psql
+                - -U
+                - postgres
+                - -c
+                - SELECT 1
+            initialDelaySeconds: 15
+            timeoutSeconds: 2
+      nodeSelector:
+        kubernetes.io/os: linux
+---
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: minio
+  name: minio
+spec:
+  ports:
+    - name: api
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    - name: dashboard
+      port: 9001
+      protocol: TCP
+      targetPort: 9001
+  selector:
+    app: minio
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: postgres
+  name: postgres
+spec:
+  ports:
+    - port: 5432
+      protocol: TCP
+      targetPort: 5432
+  selector:
+    app: postgres

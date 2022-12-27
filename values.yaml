@@ -1,0 +1,64 @@
+# Default values for helm.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# redis password
+password: redis_password
+redis_service_name: redis-service
+
+# proxy console manage username/password
+proxy_username: root
+proxy_password: proxy_password
+
+# console db
+console_db_host: mysql-service
+console_db_root_password: console_db_root_password
+console_db_persistence_enabled: false     # true: use console_db_persistence_data_dir as hostpath
+console_db_persistence_data_dir: /root/data
+# console api
+console_api_service_name: console-api-service
+console_api_service_port: 80
+
+poc_api_endpoint: console-api-service
+
+# kafka
+kafka_broker_service: ""
+crawler_topic: crawler
+crawler_group_id: crawler
+
+# xray
+xray_proxy_service: xray-proxy-service  # https/http proxy (attention: it should be better not to modify this name)
+xray_proxy_port: 58088
+
+xray_webhook_service: xray-webhook-service
+xray_webhook_port: 58089
+
+# sensitive info
+weixin_webhook_url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=07d4613c-45ef-46e2-9379-a7b2aade3132
+
+# install
+console: true
+crawler: true
+xray: true
+
+argo-workflows:
+  controller:
+    serviceAccount:
+      create: false
+  workflow:
+    rbac:
+      create: false
+  server:
+    serviceAccount:
+      create: false
+    extraArgs:
+      - "--namespaced"
+      - "--auth-mode=client"
+      - "--auth-mode=server"
+    baseHref: /argo/
+  crds:
+    install: true
+server:
+  name: argo-server
+
+console_domain: console.com   # ingress domain

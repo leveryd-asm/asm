@@ -1,0 +1,78 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  labels:
+    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+  name: complex-template
+spec:
+  arguments: {}
+  templates:
+    - name: 从API获取兄弟域名-获取子域名-nuclei扫描-保存结果
+      inputs:
+        parameters:
+          - name: query
+            value: 'limit=10000&offset=0'
+          - name: concurrency
+            value: 3
+          - name: get-subdomain-way
+            value: all
+      parallelism: 18
+      steps:
+        - - name: call-getrootdomain-from-console-api
+            arguments:
+              parameters:
+                - name: query
+                  value: {{`'{{inputs.parameters.query}}'`}}
+            templateRef:
+              name: getrootdomain
+              template: from-console-api
+        - - name: call-subdomain-nuclei-save-1
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{item}}'`}}
+            templateRef:
+              name: domains-poc-scan-template
+              template: 获取子域名-nuclei扫描-保存结果
+            withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}
+            when: {{`'{{inputs.parameters.get-subdomain-way}} == "all" || {{inputs.parameters.get-subdomain-way}} == "subfinder"'`}}
+        - - name: call-subdomain-nuclei-save-2
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{item}}'`}}
+            templateRef:
+              name: domains-poc-scan-template
+              template: oneforall获取子域名-nuclei扫描-保存结果
+            withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}
+            when: {{`'{{inputs.parameters.get-subdomain-way}} == "all" || {{inputs.parameters.get-subdomain-way}} == "oneforall"'`}}
+
+    - name: 从API获取兄弟域名-获取子域名-katana爬虫-xray扫描-保存结果
+      inputs:
+        parameters:
+          - name: query
+            value: 'limit=10000&offset=0'
+      parallelism: 3   # todo:config
+      steps:
+        - - name: call-getrootdomain-from-console-api
+            arguments:
+              parameters:
+                - name: query
+                  value: {{`inputs.parameters.query`}}
+            templateRef:
+              name: getrootdomain
+              template: from-console-api
+        - - name: call-获取子域名-katana爬虫-xray扫描-保存结果
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{item}}'`}}
+            templateRef:
+              name: domains-poc-scan-template
+              template: 获取子域名-katana爬虫-xray扫描-保存结果
+            withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}
+
+  podGC:
+    strategy: OnPodCompletion
+  ttlStrategy:
+    secondsAfterCompletion: 300

@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  labels:
+    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+  name: save-alarm
+spec:
+  arguments: {}
+  templates:
+    - name: save-nuclei
+      inputs:
+        artifacts:
+          - name: result
+            path: /tmp/result
+      container:
+        args:
+          - '-f'
+          - /tmp/result
+          - '-api'
+          - 'http://{{.Values.console_api_service_name}}:{{.Values.console_api_service_port}}'
+        image: 'leveryd/x-tool:v2022.12.14'
+
+  ttlStrategy:
+    secondsAfterCompletion: 3000
+  podGC:
+    strategy: OnPodCompletion

@@ -1,0 +1,9 @@
+dependencies:
+- name: kafka
+  repository: https://charts.bitnami.com/bitnami
+  version: 20.0.2
+- name: argo-workflows
+  repository: https://argoproj.github.io/argo-helm
+  version: 0.22.4
+digest: sha256:9ea1b1e35c140399faa60ac634fc5ab2d2335909a16d38b6c6254f42b6c791b7
+generated: "2022-12-27T18:15:16.03691+08:00"

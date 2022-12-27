@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  labels:
+    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+  name: get-subdomains
+spec:
+  templates:
+    - name: oneforall
+      inputs:
+        parameters:
+          - name: domain
+      outputs:
+        artifacts:
+          - name: subdomains
+            path: /tmp/result
+      container:
+        image: shmilylty/oneforall:version-0.4.3
+        command:
+          - sh
+        args:
+          - -c
+          - python3 oneforall.py --target {{`{{inputs.parameters.domain}}`}} --dns false run && cat /OneForAll/results/{{`{{inputs.parameters.domain}}`}}.csv | awk -F ',' '{print $6}'|tail -n +2 |sort|uniq > /tmp/result
+
+    - name: subfinder
+      inputs:
+        parameters:
+          - name: domain
+      container:
+        args:
+          - '-d'
+          - {{`'{{inputs.parameters.domain}}'`}}
+        image: 'projectdiscovery/subfinder:v2.5.5'
+
+  ttlStrategy:
+    secondsAfterCompletion: 3000
+  podGC:
+    strategy: OnPodCompletion

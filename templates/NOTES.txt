@@ -1,0 +1,5 @@
+1. Get Console Server external IP/domain by running:
+
+    kubectl describe ingress console -n {{.Release.Namespace}}
+
+docs see https://github.com/leveryd-asm/asm

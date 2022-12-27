@@ -1,0 +1,55 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crawler
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: crawler
+    spec:
+      containers:
+        - name: katana
+          image: leveryd/katana:v2022.11.23
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: kafkaURL
+              value: {{ include "kafkaURL" . }}
+            - name: topic
+              value: {{.Values.crawler_topic}}
+            - name: group_id
+              value: {{.Values.crawler_group_id}}
+            - name: proxy
+              value: "https://{{.Values.xray_proxy_service}}:{{.Values.xray_proxy_port}}"
+
+        - name: crawler-api
+          image: leveryd/katana-api:v2022.11.23
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: kafkaURL
+              value: {{ include "kafkaURL" . }}
+            - name: topic
+              value: {{.Values.crawler_topic}}
+            - name: group_id
+              value: {{.Values.crawler_group_id}}
+            - name: proxy
+              value: {{.Values.xray_proxy_service}}
+  selector:
+    matchLabels:
+      app: crawler
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crawler-service
+spec:
+  selector:
+    app: crawler
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

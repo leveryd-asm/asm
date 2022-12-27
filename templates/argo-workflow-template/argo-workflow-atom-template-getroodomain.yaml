@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  labels:
+    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+  name: getrootdomain
+spec:
+  templates:
+    - name: from-console-api
+      inputs:
+        parameters:
+          - name: query
+            value: limit=10000&offset=0   # 默认获取1w条数据
+      script:
+        image: python:3.8
+        command:
+          - python
+        source: |
+          import json
+          import sys
+          import urllib.parse
+          import urllib.request
+          from urllib.parse import quote
+
+          query = "{{`{{inputs.parameters.query}}`}}"
+          query = quote(query, safe='/=&')
+
+          url = 'http://{{.Values.console_api_service_name}}:{{.Values.console_api_service_port}}/api/info/brotherdomain/query?'+query
+          request = urllib.request.Request(url)
+          response = urllib.request.urlopen(request).read()
+
+          domains = response.decode()
+
+          domains = json.loads(domains)
+          ret = [domain['rootdomain'] for domain in domains['rows']]
+          json.dump(ret, sys.stdout)
+
+  ttlStrategy:
+    secondsAfterCompletion: 3000
+  podGC:
+    strategy: OnPodCompletion

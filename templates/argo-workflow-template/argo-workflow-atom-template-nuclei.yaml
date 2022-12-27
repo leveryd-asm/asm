@@ -1,0 +1,58 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  labels:
+    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+  name: nuclei
+spec:
+  arguments: {}
+  templates:
+    - name: retest  # 对报警复测
+      inputs:
+        parameters:
+          - name: domain
+          - name: id
+      container:
+        image: projectdiscovery/nuclei:v2.8.3
+        command:
+          - nuclei
+        args:
+          - '--target'
+          - {{`'{{inputs.parameters.domain}}'`}}
+          - '-id'
+          - {{`'{{inputs.parameters.id}}'`}}
+          - '-debug'
+          - '-o'
+          - /tmp/nuclei-result.json
+      retryStrategy:
+        limit: "3"
+        retryPolicy: "Always"
+
+    - name: nuclei-scan
+      inputs:
+        artifacts:
+          - name: hosts
+            path: /tmp/host
+      outputs:
+        artifacts:
+          - name: nuclei-result
+            path: /tmp/nuclei-result.json
+      container:
+        image: 'projectdiscovery/nuclei:v2.8.3'
+        command:
+          - nuclei
+        args:
+          - '-l'
+          - /tmp/host
+          - '-t'
+          - >-
+            exposures,misconfiguration,cnvd,vulnerabilities,workflows,exposed-panels
+          - '-es'
+          - info
+          - '-ni'
+          - '-o'
+          - /tmp/nuclei-result.json
+  ttlStrategy:
+    secondsAfterCompletion: 3000
+  podGC:
+    strategy: OnPodCompletion

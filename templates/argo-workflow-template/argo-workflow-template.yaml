@@ -1,0 +1,119 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  labels:
+    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+  name: domains-poc-scan-template
+spec:
+  arguments: {}
+  templates:
+    - name: 获取子域名-nuclei扫描-保存结果
+      inputs:
+        parameters:
+          - name: domain
+      steps:
+        - - name: call-get-subdomains
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{inputs.parameters.domain}}'`}}
+            templateRef:
+              name: get-subdomains
+              template: subfinder
+        - - name: call-nuclei-scan
+            arguments:
+              artifacts:
+                - name: hosts
+                  raw:
+                    data: {{`'{{steps.call-get-subdomains.outputs.result}}'`}}
+            templateRef:
+              name: nuclei
+              template: nuclei-scan
+        - - name: call-save-nuclei-alarm
+            arguments:
+              artifacts:
+                - from: {{`'{{steps.call-nuclei-scan.outputs.artifacts.nuclei-result}}'`}}
+                  name: result
+            templateRef:
+              name: save-alarm
+              template: save-nuclei
+
+    - name: oneforall获取子域名-nuclei扫描-保存结果
+      inputs:
+        parameters:
+          - name: domain
+      steps:
+        - - name: call-get-subdomains
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{inputs.parameters.domain}}'`}}
+            templateRef:
+              name: get-subdomains
+              template: oneforall
+        - - name: call-nuclei-scan
+            arguments:
+              artifacts:
+                - name: hosts
+                  from: {{`'{{steps.call-get-subdomains.outputs.artifacts.subdomains}}'`}}
+            templateRef:
+              name: nuclei
+              template: nuclei-scan
+        - - name: call-save-nuclei-alarm
+            arguments:
+              artifacts:
+                - from: {{`'{{steps.call-nuclei-scan.outputs.artifacts.nuclei-result}}'`}}
+                  name: result
+            templateRef:
+              name: save-alarm
+              template: save-nuclei
+
+    - name: nuclei扫描-保存结果    # 测试nuclei扫描后保存扫描结果
+      inputs:
+        parameters:
+          - name: domain
+      steps:
+        - - name: call-nuclei-scan
+            arguments:
+              artifacts:
+                - name: hosts
+                  raw:
+                    data: {{`'{{inputs.parameters.domain}}'`}}
+            templateRef:
+              name: nuclei
+              template: nuclei-scan
+        - - name: save-nuclei
+            arguments:
+              artifacts:
+                - name: result
+                  from: {{`'{{steps.call-nuclei-scan.outputs.artifacts.nuclei-result}}'`}}
+            templateRef:
+              name: save-alarm
+              template: save-nuclei
+
+    - name: 获取子域名-katana爬虫-xray扫描-保存结果
+      inputs:
+        parameters:
+          - name: domain
+      steps:
+        - - name: call-subfinder
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{inputs.parameters.domain}}'`}}
+            templateRef:
+              name: get-subdomains
+              template: subfinder
+        - - name: call-katana
+            arguments:
+              parameters:
+                - name: domains
+                  value: {{`'{{steps.call-subfinder.outputs.result}}'`}}
+            templateRef:
+              name: crawler
+              template: katana
+
+  podGC:
+    strategy: OnPodCompletion
+  ttlStrategy:
+    secondsAfterCompletion: 300
