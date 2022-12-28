@@ -100,7 +100,7 @@ data:
     errored: 3
 kind: ConfigMap
 metadata:
-  name: workflow-controller-configmap
+  name: "argo-workflows-app-workflow-controller-configmap"    # controller and server will use the same configmap
 ---
 apiVersion: v1
 kind: Secret

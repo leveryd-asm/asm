@@ -41,7 +41,10 @@ console: true
 crawler: true
 xray: true
 
+# argo workflows server and controller config
 argo-workflows:
+  fullnameOverride: argo-workflows-app  # app name, attention: it should be better not to modify this name
+  singleNamespace: true
   controller:
     serviceAccount:
       create: false
@@ -52,7 +55,6 @@ argo-workflows:
     serviceAccount:
       create: false
     extraArgs:
-      - "--namespaced"
       - "--auth-mode=client"
       - "--auth-mode=server"
     baseHref: /argo/

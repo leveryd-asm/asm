@@ -125,7 +125,7 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: release-name-argo-workflows-server
+                name: argo-workflows-app-server   # name of the service
                 port:
                   number: 2746
 ---
@@ -133,12 +133,6 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: console
-  annotations:
-    nginx.ingress.kubernetes.io/server-snippet: |-
-{{/*      rewrite ^(/argo)(.*) /$2 last;*/}}
-{{/*      location /argo/ {*/}}
-{{/*        proxy_pass http://release-name-argo-workflows-server:2746/;*/}}
-{{/*      }*/}}
 spec:
   rules:
     - host: {{.Values.console_domain}}
