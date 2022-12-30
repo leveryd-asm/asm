@@ -22,6 +22,8 @@
 
 设计思路见 [基于任务编排玩一玩漏扫](https://mp.weixin.qq.com/s/CQshF0KsDCPB6AmtOgOBqw)
 
+因为担心被人拿来做恶意扫描，所以有需要的可以联系我微信`happy_leveryd`获取demo环境地址。
+
 # 特点
 <details>
 <summary><b>💻  开箱即用 </b></summary>
@@ -41,6 +43,11 @@
 <details>
 <summary><b>🤖 管理控制台 </b></summary>
 向用户提供UI界面管理资产、运营漏洞；对于开发者来说，想要在控制台新增一个模板可以很快，常规的crud操作只需要通过配置选项就能完成模块的前后端开发
+</details>
+
+<details>
+<summary><b>💡 多实例部署 </b></summary>
+同一kubernetes集群可以部署多个asm实例，数据互不影响。所以你可以区分正式环境和线上环境，也可以对不同类型的资产分别部署实例（比如国外资产和国内资产）
 </details>
 
 # 运维指南
