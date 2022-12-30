@@ -35,6 +35,8 @@ metadata:
 ---
 apiVersion: v1
 data:
+  workflowRestrictions: |
+    templateReferencing: Strict
   artifactRepository: |
     s3:
       bucket: my-bucket
