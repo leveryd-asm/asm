@@ -42,13 +42,28 @@ spec:
           - name: domains
             path: /tmp/domains
       container:
-        image: projectdiscovery/katana:latest
+        image: projectdiscovery/katana:v0.0.2
         args:
           - '-v'
           - '-list'
           - /tmp/domains
           - '-proxy'
-          - http://{{.Values.xray_proxy_service}}:{{.Values.xray_proxy_port}}
+          # "leveryd.com" see crawler/coredns-config.yaml
+          - 'http://crawler-service.{{.Release.Namespace}}.leveryd.com'
+
+    - name: katana-binary-from-one-url
+      inputs:
+        parameters:
+          - name: url
+      container:
+        image: projectdiscovery/katana:v0.0.2
+        args:
+          - '-v'
+          - '-u'
+          - '{{`{{inputs.parameters.url}}`}}'
+          # "leveryd.com" see crawler/coredns-config.yaml
+          - 'http://crawler-service.{{.Release.Namespace}}.leveryd.com'
+
   ttlStrategy:
     secondsAfterCompletion: 3000
   podGC:

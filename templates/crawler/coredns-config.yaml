@@ -1,0 +1,40 @@
+{{/*kind: ConfigMap*/}}
+{{/*apiVersion: v1*/}}
+{{/*metadata:*/}}
+{{/*  name: coredns*/}}
+{{/*  namespace: kube-system*/}}
+{{/*data:*/}}
+{{/*  Corefile: |*/}}
+{{/*    .:53 {*/}}
+{{/*        errors*/}}
+{{/*        health {*/}}
+{{/*           lameduck 5s*/}}
+{{/*        }*/}}
+{{/*        ready*/}}
+{{/*        kubernetes cluster.local in-addr.arpa ip6.arpa {*/}}
+{{/*           pods insecure*/}}
+{{/*           fallthrough in-addr.arpa ip6.arpa*/}}
+{{/*           ttl 30*/}}
+{{/*        }*/}}
+{{/*        # rewrite stop {*/}}
+{{/*        #   name leveryd.proxy.com xray-proxy-service.asm.svc.cluster.local*/}}
+{{/*        #   answer name xray-proxy-service.asm.svc.cluster.local leveryd.proxy.com*/}}
+{{/*        # }*/}}
+{{/*        # rewrite stop {*/}}
+{{/*        #   name regex (.*)\.my\.domain\.$ {1}.asm.svc.cluster.local*/}}
+{{/*        #   answer name (.*)\.asm\.svc\.cluster\.local\.$ {1}.my.domain*/}}
+{{/*        # }*/}}
+{{/*        rewrite stop {*/}}
+{{/*          name regex (.*)\.(.*)\.leveryd.com {1}.{2}.svc.cluster.local*/}}
+{{/*          answer name (.*)\.(.*)\.svc\.cluster\.local {1}.{2}.leveryd.com*/}}
+{{/*        }*/}}
+{{/*        # log*/}}
+{{/*        prometheus :9153*/}}
+{{/*        forward . /etc/resolv.conf {*/}}
+{{/*           max_concurrent 1000*/}}
+{{/*        }*/}}
+{{/*        cache 30*/}}
+{{/*        loop*/}}
+{{/*        reload*/}}
+{{/*        loadbalance*/}}
+{{/*    }*/}}
