@@ -6,7 +6,7 @@ metadata:
   name: crawler
 spec:
   templates:
-    - name: katana
+    - name: katana-service-from-domains
       inputs:
         parameters:
           - name: domains
@@ -36,33 +36,39 @@ spec:
 
           # json.dump(domains.split("\n"), sys.stdout)
 
-    - name: katana-binary
+
+    - name: katana-service-from-file
       inputs:
         artifacts:
           - name: domains
             path: /tmp/domains
-      container:
-        image: projectdiscovery/katana:v0.0.2
+      outputs: {}
+      script:
+        image: python:3.8
+        command:
+          - python
         args:
-          - '-v'
-          - '-list'
-          - /tmp/domains
-          - '-proxy'
-          # "leveryd.com" see crawler/coredns-config.yaml
-          - 'http://crawler-service.{{.Release.Namespace}}.leveryd.com'
-
-    - name: katana-binary-from-one-url
-      inputs:
-        parameters:
-          - name: url
-      container:
-        image: projectdiscovery/katana:v0.0.2
-        args:
-          - '-v'
           - '-u'
-          - '{{`{{inputs.parameters.url}}`}}'
-          # "leveryd.com" see crawler/coredns-config.yaml
-          - 'http://crawler-service.{{.Release.Namespace}}.leveryd.com'
+        source: |
+          import json
+          import sys
+          import urllib.parse
+          import urllib.request
+
+          domains = open("/tmp/domains", "r").read()
+
+          url = 'http://crawler-service'  # todo:config
+          for domain in domains.split("\n"):
+            domain = domain.strip()
+            print(domain)
+
+            if domain != "":
+              domain = "http://" + domain
+              request=urllib.request.Request(url, domain.encode())
+              reponse=urllib.request.urlopen(request).read()
+              print("ok\n")
+
+          # json.dump(domains.split("\n"), sys.stdout)
 
   ttlStrategy:
     secondsAfterCompletion: 3000

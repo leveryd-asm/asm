@@ -24,8 +24,7 @@ spec:
             arguments:
               artifacts:
                 - name: hosts
-                  raw:
-                    data: {{`'{{steps.call-get-subdomains.outputs.result}}'`}}
+                  from: {{`'{{steps.call-get-subdomains.outputs.artifacts.subdomains}}'`}}
             templateRef:
               name: nuclei
               template: nuclei-scan
@@ -104,14 +103,14 @@ spec:
             templateRef:
               name: get-subdomains
               template: subfinder
-        - - name: call-katana
+        - - name: call-katana-service-from-file
             arguments:
-              parameters:
+              artifacts:
                 - name: domains
-                  value: {{`'{{steps.call-subfinder.outputs.result}}'`}}
+                  from: {{`'{{steps.call-subfinder.outputs.artifacts.subdomains}}'`}}
             templateRef:
               name: crawler
-              template: katana
+              template: katana-service-from-file
 
   podGC:
     strategy: OnPodCompletion
