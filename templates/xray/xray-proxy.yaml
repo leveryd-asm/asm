@@ -2,13 +2,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: xray
+  name: xray-proxy
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: xray
+        app: xray-proxy
     spec:
       containers:
         - name: proxy
@@ -16,19 +16,14 @@ spec:
           ports:
             - containerPort: 80
           command: ["/bin/bash", "-c", "/tools/xray webscan --plugins cmd-injection,jsonp,path-traversal,sqldet,xss,xxe,fastjson,shiro,thinkphp --listen 0.0.0.0:80 --webhook-output http://{{.Values.xray_webhook_service}}:{{.Values.xray_webhook_port}}/webhook"]
-        - name: webhook
-          image: leveryd/xray-webhook:v2022.12.12
-          imagePullPolicy: IfNotPresent
-          env:
-            - name: WEBHOOK_URL
-              value: {{.Values.weixin_webhook_url}}
-            - name: api
-              value: "http://{{.Values.console_api_service_name}}:{{.Values.console_api_service_port}}"
-          ports:
-            - containerPort: 8080
+          resources:
+            limits:
+              cpu: "3"
+            requests:
+              cpu: "0.5"
   selector:
     matchLabels:
-      app: xray
+      app: xray-proxy
 ---
 apiVersion: v1
 kind: Service
@@ -36,20 +31,8 @@ metadata:
   name: {{.Values.xray_proxy_service}}
 spec:
   selector:
-    app: xray
+    app: xray-proxy
   ports:
     - protocol: TCP
       port: {{.Values.xray_proxy_port}}
       targetPort: 80
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{.Values.xray_webhook_service}}
-spec:
-  selector:
-    app: xray
-  ports:
-    - protocol: TCP
-      port: {{.Values.xray_webhook_port}}
-      targetPort: 8080

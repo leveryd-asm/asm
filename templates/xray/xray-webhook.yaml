@@ -1,0 +1,38 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xray-webhook
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: xray-webhook
+    spec:
+      containers:
+        - name: webhook
+          image: leveryd/xray-webhook:v2022.12.12
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WEBHOOK_URL
+              value: {{.Values.weixin_webhook_url}}
+            - name: api
+              value: "http://{{.Values.console_api_service_name}}:{{.Values.console_api_service_port}}"
+          ports:
+            - containerPort: 8080
+  selector:
+    matchLabels:
+      app: xray-webhook
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.Values.xray_webhook_service}}
+spec:
+  selector:
+    app: xray-webhook
+  ports:
+    - protocol: TCP
+      port: {{.Values.xray_webhook_port}}
+      targetPort: 8080
