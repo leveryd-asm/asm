@@ -12,11 +12,13 @@ spec:
         parameters:
           - name: query
             value: 'limit=10000&offset=0'
-          - name: concurrency
-            value: 3
           - name: get-subdomain-way
             value: all
-      parallelism: 18
+            enum:
+              - all
+              - subfinder
+              - oneforall
+      parallelism: 3 # 并发数
       steps:
         - - name: call-getrootdomain-from-console-api
             arguments:
@@ -62,7 +64,7 @@ spec:
             templateRef:
               name: getrootdomain
               template: from-console-api
-        - - name: call-获取子域名-katana爬虫-xray扫描-保存结果
+        - - name: call-crawler-scanner-save
             arguments:
               parameters:
                 - name: domain
@@ -72,7 +74,64 @@ spec:
               template: 获取子域名-katana爬虫-xray扫描-保存结果
             withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}
 
+    - name: 输入域名列表-获取子域名-nuclei扫描-保存结果
+      inputs:
+        parameters:
+          - name: domain-list
+            value: '["vulnweb.com", "vulnweb.com"]'
+          - name: get-subdomain-way
+            value: all
+            enum:
+              - all
+              - subfinder
+              - oneforall
+      parallelism: 3
+      steps:
+        - - name: call-subdomain-nuclei-save-1
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{item}}'`}}
+            templateRef:
+              name: domains-poc-scan-template
+              template: 获取子域名-nuclei扫描-保存结果
+            withParam: {{`'{{inputs.parameters.domain-list}}'`}}
+            when: {{`'{{inputs.parameters.get-subdomain-way}} == "all" || {{inputs.parameters.get-subdomain-way}} == "subfinder"'`}}
+        - - name: call-subdomain-nuclei-save-2
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{item}}'`}}
+            templateRef:
+              name: domains-poc-scan-template
+              template: oneforall获取子域名-nuclei扫描-保存结果
+            withParam: {{`'{{inputs.parameters.domain-list}}'`}}
+            when: {{`'{{inputs.parameters.get-subdomain-way}} == "all" || {{inputs.parameters.get-subdomain-way}} == "oneforall"'`}}
+
   podGC:
     strategy: OnPodCompletion
   ttlStrategy:
     secondsAfterCompletion: 300
+---
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: everyd-two-hours
+spec:
+  # run everyd two hour
+  schedule: "0 */2 * * *"
+  suspend: true
+  workflowSpec:
+    workflowTemplateRef:
+      name: complex-template
+    arguments:
+      parameters:
+        - name: domain-list
+          value: '["xxx.com", "yyy.com"]'
+        - name: get-subdomain-way
+          value: all
+          enum:
+            - all
+            - subfinder
+            - oneforall
+    entrypoint: 输入域名列表-获取子域名-nuclei扫描-保存结果
