@@ -10,6 +10,7 @@ spec:
       inputs:
         parameters:
           - name: domain
+            description: '域名，比如 apple.com'
       outputs:
         artifacts:
           - name: subdomains
@@ -26,6 +27,7 @@ spec:
       inputs:
         parameters:
           - name: domain
+            description: '域名，比如 apple.com'
       outputs:
         artifacts:
           - name: subdomains

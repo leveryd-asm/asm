@@ -41,6 +41,7 @@ spec:
       inputs:
         parameters:
           - name: domain
+            description: "二级域名，比如 baidu.com"
       steps:
         - - name: call-get-subdomains
             arguments:
@@ -71,6 +72,7 @@ spec:
       inputs:
         parameters:
           - name: domain
+            description: "域名，比如 www.baidu.com"
       steps:
         - - name: call-nuclei-scan
             arguments:
@@ -94,6 +96,7 @@ spec:
       inputs:
         parameters:
           - name: domain
+            description: "二级域名，比如 baidu.com"
       steps:
         - - name: call-subfinder
             arguments:

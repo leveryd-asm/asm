@@ -11,7 +11,9 @@ spec:
       inputs:
         parameters:
           - name: domain
+            description: '域名，比如 apple.com'
           - name: id
+            description: 'nuclei 规则id'
       container:
         image: projectdiscovery/nuclei:v2.8.3
         command:

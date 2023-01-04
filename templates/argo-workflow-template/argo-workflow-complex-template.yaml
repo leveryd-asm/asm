@@ -12,7 +12,9 @@ spec:
         parameters:
           - name: query
             value: 'limit=10000&offset=0'
+            description: "console api查询子域名时的条件"
           - name: get-subdomain-way
+            description: "哪种方式扫描子域名"
             value: all
             enum:
               - all
@@ -54,6 +56,7 @@ spec:
         parameters:
           - name: query
             value: 'limit=10000&offset=0'
+            description: "console api查询子域名时的条件"
       parallelism: 3   # todo:config
       steps:
         - - name: call-getrootdomain-from-console-api
@@ -78,8 +81,10 @@ spec:
       inputs:
         parameters:
           - name: domain-list
-            value: '["vulnweb.com", "vulnweb.com"]'
+            description: '待扫描的二级域名列表，比如["a.vulnweb.com", "b.vulnweb.com"]'
+            value: '["xxx"]'
           - name: get-subdomain-way
+            description: "哪种方式扫描子域名"
             value: all
             enum:
               - all
