@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  labels:
+    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+  name: httpx
+spec:
+  arguments: {}
+  templates:
+    - name: probe-80-443-from-file
+      inputs:
+        artifacts:
+          - name: hosts
+            path: /tmp/hosts
+      outputs:
+        artifacts:
+          - name: urls
+            path: /tmp/result
+      container:
+        image: projectdiscovery/httpx:v1.2.4
+        args:
+          - '-l'
+          - '/tmp/hosts'
+          - '-p'
+          - 'http:80,https:443'
+          - '-o'
+          - '/tmp/result'

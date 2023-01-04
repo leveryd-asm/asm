@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  labels:
+    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+  name: util
+spec:
+  arguments: {}
+  templates:
+    - name: get-file-lines-count  # 获取文件行数
+      inputs:
+        artifacts:
+          - name: file
+            path: /tmp/file
+      container:
+        image: ubuntu:lunar-20221207
+        command:
+          - "/bin/sh"
+          - "-c"
+          - "wc -l /tmp/file|awk '{print $1}'"
+
+    - name: get-file-line-from-index  # 根据文件行数获取文件内容
+      inputs:
+        artifacts:
+          - name: file
+            path: /tmp/file
+        parameters:
+          - name: index
+      container:
+        image: ubuntu:lunar-20221207
+        command: ["awk"]
+        args:
+          - 'NR=={{`{{inputs.parameters.index}}+1`}}'
+          - '/tmp/file'
+
+    - name: generate-http-prefix
+      data:
+
+  ttlStrategy:
+    secondsAfterCompletion: 3000
+  podGC:
+    strategy: OnPodCompletion

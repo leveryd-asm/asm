@@ -5,6 +5,12 @@ metadata:
     workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
   name: crawler
 spec:
+  arguments:
+    parameters:
+      - name: xray-proxy-url
+        value: "http://10.233.62.230:58088"
+        description: "xray-proxy service address, e.g 'http://10.233.62.230:58088'"
+
   templates:
     - name: katana-service-from-domains
       inputs:
@@ -69,6 +75,130 @@ spec:
               print("ok\n")
 
           # json.dump(domains.split("\n"), sys.stdout)
+
+    - name: katana-domains
+      inputs:
+        parameters:
+          - name: domains
+            description: '待扫描的域名列表，比如 apple.com换行facebook.com'
+      steps:
+        - - name: call-katana-binary
+            template: katana-binary
+            arguments:
+              artifacts:
+                - name: domains
+                  raw:
+                    data: {{`"{{inputs.parameters.domains}}"`}}
+
+    - name: katana-binary-from-one-domain
+      inputs:
+        parameters:
+          - name: url
+            description: '待扫描的域名，比如 apple.com'
+      container:
+        image: projectdiscovery/katana:v0.0.2
+        args:
+          - '-v'
+          - '-u'
+          - 'http://{{`{{inputs.parameters.url}}`}}'
+          # "leveryd.com" see crawler/coredns-config.yaml
+          - '-proxy'
+          # - 'https://xray-proxy-service.{{.Release.Namespace}}.leveryd.com:{{.Values.xray_proxy_port}}'
+          # - 'http://10.233.62.230:{{.Values.xray_proxy_port}}'
+          - {{`"{{workflow.parameters.xray-proxy-url}}"`}}
+          - '-system-chrome'
+          - '-headless'
+          - '-headless-options'
+          # - 'proxy-server=http://10.233.62.230:{{.Values.xray_proxy_port}}'
+          - 'proxy-server={{`{{workflow.parameters.xray-proxy-url}}`}}'
+
+        resources: # limit the resources
+          limits:
+            cpu: 1200m
+
+    - name: katana-binary-from-one-url
+      inputs:
+        parameters:
+          - name: url
+            description: '待扫描的url，比如 https://apple.com'
+      container:
+        image: projectdiscovery/katana:v0.0.2
+        args:
+          - '-v'
+          - '-u'
+          - '{{`{{inputs.parameters.url}}`}}'
+          # "leveryd.com" see crawler/coredns-config.yaml
+          - '-proxy'
+          # - 'https://xray-proxy-service.{{.Release.Namespace}}.leveryd.com:{{.Values.xray_proxy_port}}'
+          # - 'http://10.233.62.230:{{.Values.xray_proxy_port}}'
+          - {{`"{{workflow.parameters.xray-proxy-url}}"`}}
+          - '-system-chrome'
+          - '-headless'
+          - '-headless-options'
+          # - 'proxy-server=http://10.233.62.230:{{.Values.xray_proxy_port}}'
+          - 'proxy-server={{`{{workflow.parameters.xray-proxy-url}}`}}'
+        resources: # limit the resources
+          limits:
+            cpu: 1200m
+
+    - name: katana-binary   # 只会被其他template调用
+      inputs:
+        artifacts:
+          - name: domains
+      parallelism: 3
+      steps:
+        - - name: call-probe-80-443-from-file   # 过滤出存在web服务的主机
+            arguments:
+              artifacts:
+                - name: hosts
+                  from: {{`"{{inputs.artifacts.domains}}"`}}
+            templateRef:
+              name: httpx
+              template: probe-80-443-from-file
+        - - name: call-get-file-lines-count
+            arguments:
+              artifacts:
+                - name: file
+                  from: {{`"{{steps.call-probe-80-443-from-file.outputs.artifacts.urls}}"`}}
+            templateRef:
+              name: util
+              template: get-file-lines-count
+        - - name: call-katana-from-file-index
+            arguments:
+              artifacts:
+                - name: domains
+                  from: {{`"{{steps.call-probe-80-443-from-file.outputs.artifacts.urls}}"`}}
+              parameters:
+                - name: index
+                  value: {{`"{{item}}"`}}
+            template: katana-from-file-index
+            withSequence:
+              count: {{`"{{steps.call-get-file-lines-count.outputs.result}}"`}}
+
+    - name: katana-from-file-index  # katana根据行数索引扫描某个文件中的url。只会被其他template调用
+      inputs:
+        artifacts:
+          - name: domains
+        parameters:
+          - name: index
+      steps:
+        - - name: call-get-file-line-from-index
+            arguments:
+              artifacts:
+                - name: file
+                  from: {{`"{{inputs.artifacts.domains}}"`}}
+              parameters:
+                - name: index
+                  value: {{`"{{inputs.parameters.index}}"`}}
+            templateRef:
+              name: util
+              template: get-file-line-from-index
+        - - name: call-katana-binary-from-one-url
+            template: katana-binary-from-one-url
+            arguments:
+              parameters:
+                - name: url
+                  value: {{`"{{steps.call-get-file-line-from-index.outputs.result}}"`}}
 
   ttlStrategy:
     secondsAfterCompletion: 3000
