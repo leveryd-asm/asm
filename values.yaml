@@ -64,3 +64,6 @@ server:
   name: argo-server
 
 console_domain: console.com   # ingress domain
+
+# security
+user_can_deploy_workflowtemplate: true  # if u set false, it will be more security, because user can only run certain task
