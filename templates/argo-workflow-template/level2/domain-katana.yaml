@@ -1,0 +1,62 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  labels:
+    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+  name: level2-domain-katana
+spec:
+  arguments:
+    parameters:
+      - name: xray-proxy-url
+        value: "http://10.233.62.230:58088"
+        description: "xray-proxy service address, e.g 'http://10.233.62.230:58088'"
+  templates:
+    - name: 获取子域名-katana爬虫-xray扫描-保存结果
+      inputs:
+        parameters:
+          - name: domain
+            description: "二级域名，比如 baidu.com"
+      steps:
+        - - name: call-subfinder
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{inputs.parameters.domain}}'`}}
+            templateRef:
+              name: level1-get-subdomains
+              template: subfinder
+        - - name: call-katana-service-from-file
+            arguments:
+              artifacts:
+                - name: domains
+                  from: {{`'{{steps.call-subfinder.outputs.artifacts.subdomains}}'`}}
+            templateRef:
+              name: level1-crawler
+              template: katana-service-from-file
+
+    - name: 获取子域名-katana爬虫二进制-xray扫描-保存结果  # 区别：爬虫任务调用katana二进制，而不是katana服务
+      inputs:
+        parameters:
+          - name: domain
+            description: "二级域名，比如 baidu.com"
+      steps:
+        - - name: call-subfinder
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{inputs.parameters.domain}}'`}}
+            templateRef:
+              name: level1-get-subdomains
+              template: subfinder
+        - - name: call-katana-binary
+            arguments:
+              artifacts:
+                - name: domains
+                  from: {{`'{{steps.call-subfinder.outputs.artifacts.subdomains}}'`}}
+            templateRef:
+              name: level1-crawler
+              template: katana-binary
+  podGC:
+    strategy: OnPodCompletion
+  ttlStrategy:
+    secondsAfterCompletion: 300

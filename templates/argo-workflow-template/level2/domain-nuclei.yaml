@@ -3,13 +3,8 @@ kind: WorkflowTemplate
 metadata:
   labels:
     workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
-  name: domains-poc-scan-template
+  name: level2-domain-nuclei
 spec:
-  arguments:
-    parameters:
-      - name: xray-proxy-url
-        value: "http://10.233.62.230:58088"
-        description: "xray-proxy service address, e.g 'http://10.233.62.230:58088'"
   templates:
     - name: 获取子域名-nuclei扫描-保存结果
       inputs:
@@ -22,7 +17,7 @@ spec:
                 - name: domain
                   value: {{`'{{inputs.parameters.domain}}'`}}
             templateRef:
-              name: get-subdomains
+              name: level1-get-subdomains
               template: subfinder
         - - name: call-nuclei-scan
             arguments:
@@ -30,7 +25,7 @@ spec:
                 - name: hosts
                   from: {{`'{{steps.call-get-subdomains.outputs.artifacts.subdomains}}'`}}
             templateRef:
-              name: nuclei
+              name: level1-nuclei
               template: nuclei-scan
         - - name: call-save-nuclei-alarm
             arguments:
@@ -38,7 +33,7 @@ spec:
                 - from: {{`'{{steps.call-nuclei-scan.outputs.artifacts.nuclei-result}}'`}}
                   name: result
             templateRef:
-              name: save-alarm
+              name: level1-save-alarm
               template: save-nuclei
 
     - name: oneforall获取子域名-nuclei扫描-保存结果
@@ -53,7 +48,7 @@ spec:
                 - name: domain
                   value: {{`'{{inputs.parameters.domain}}'`}}
             templateRef:
-              name: get-subdomains
+              name: level1-get-subdomains
               template: oneforall
         - - name: call-nuclei-scan
             arguments:
@@ -61,7 +56,7 @@ spec:
                 - name: hosts
                   from: {{`'{{steps.call-get-subdomains.outputs.artifacts.subdomains}}'`}}
             templateRef:
-              name: nuclei
+              name: level1-nuclei
               template: nuclei-scan
         - - name: call-save-nuclei-alarm
             arguments:
@@ -69,7 +64,7 @@ spec:
                 - from: {{`'{{steps.call-nuclei-scan.outputs.artifacts.nuclei-result}}'`}}
                   name: result
             templateRef:
-              name: save-alarm
+              name: level1-save-alarm
               template: save-nuclei
 
     - name: nuclei扫描-保存结果    # 测试nuclei扫描后保存扫描结果
@@ -85,7 +80,7 @@ spec:
                   raw:
                     data: {{`'{{inputs.parameters.domain}}'`}}
             templateRef:
-              name: nuclei
+              name: level1-nuclei
               template: nuclei-scan
         - - name: save-nuclei
             arguments:
@@ -93,54 +88,9 @@ spec:
                 - name: result
                   from: {{`'{{steps.call-nuclei-scan.outputs.artifacts.nuclei-result}}'`}}
             templateRef:
-              name: save-alarm
+              name: level1-save-alarm
               template: save-nuclei
 
-    - name: 获取子域名-katana爬虫-xray扫描-保存结果
-      inputs:
-        parameters:
-          - name: domain
-            description: "二级域名，比如 baidu.com"
-      steps:
-        - - name: call-subfinder
-            arguments:
-              parameters:
-                - name: domain
-                  value: {{`'{{inputs.parameters.domain}}'`}}
-            templateRef:
-              name: get-subdomains
-              template: subfinder
-        - - name: call-katana-service-from-file
-            arguments:
-              artifacts:
-                - name: domains
-                  from: {{`'{{steps.call-subfinder.outputs.artifacts.subdomains}}'`}}
-            templateRef:
-              name: crawler
-              template: katana-service-from-file
-
-    - name: 获取子域名-katana爬虫二进制-xray扫描-保存结果  # 区别：爬虫任务调用katana二进制，而不是katana服务
-      inputs:
-        parameters:
-          - name: domain
-            description: "二级域名，比如 baidu.com"
-      steps:
-        - - name: call-subfinder
-            arguments:
-              parameters:
-                - name: domain
-                  value: {{`'{{inputs.parameters.domain}}'`}}
-            templateRef:
-              name: get-subdomains
-              template: subfinder
-        - - name: call-katana-binary
-            arguments:
-              artifacts:
-                - name: domains
-                  from: {{`'{{steps.call-subfinder.outputs.artifacts.subdomains}}'`}}
-            templateRef:
-              name: crawler
-              template: katana-binary
   podGC:
     strategy: OnPodCompletion
   ttlStrategy:

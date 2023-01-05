@@ -3,7 +3,7 @@ kind: WorkflowTemplate
 metadata:
   labels:
     workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
-  name: save-alarm
+  name: level1-save-alarm
 spec:
   arguments: {}
   templates:

@@ -3,7 +3,7 @@ kind: WorkflowTemplate
 metadata:
   labels:
     workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
-  name: getrootdomain
+  name: level1-getrootdomain
 spec:
   templates:
     - name: from-console-api

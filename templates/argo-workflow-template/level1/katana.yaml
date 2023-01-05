@@ -3,7 +3,7 @@ kind: WorkflowTemplate
 metadata:
   labels:
     workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
-  name: crawler
+  name: level1-crawler
 spec:
   arguments:
     parameters:
@@ -153,7 +153,7 @@ spec:
                 - name: hosts
                   from: {{`"{{inputs.artifacts.domains}}"`}}
             templateRef:
-              name: httpx
+              name: level1-httpx
               template: probe-80-443-from-file
         - - name: call-get-file-lines-count
             arguments:

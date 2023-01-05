@@ -1,0 +1,61 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  labels:
+    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+  name: level3-crawl-scan
+spec:
+  arguments:
+    parameters:
+      - name: xray-proxy-url
+        value: "http://10.233.62.230:58088"
+        description: "xray-proxy service address, e.g 'http://10.233.62.230:58088'"
+  templates:
+    - name: 从API获取兄弟域名-获取子域名-katana爬虫-xray扫描-保存结果
+      inputs:
+        parameters:
+          - name: query
+            value: 'limit=10000&offset=0&accurate=是'
+            description: "console api查询子域名时的条件"
+          - name: crawler-way
+            default: "katana-binary"
+            enum:
+              - "katana-service"
+              - "katana-binary"
+            description: "采用哪种爬虫方式"
+
+      parallelism: 3   # todo:config
+      steps:
+        - - name: call-getrootdomain-from-console-api
+            arguments:
+              parameters:
+                - name: query
+                  value: {{`"{{inputs.parameters.query}}"`}}
+            templateRef:
+              name: level1-getrootdomain
+              template: from-console-api
+        - - name: call-katana-scanner-save
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{item}}'`}}
+            templateRef:
+              name: level2-domain-katana
+              template: 获取子域名-katana爬虫-xray扫描-保存结果
+            withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}
+            when: {{`'"{{inputs.parameters.crawler-way}}" == "katana-service"'`}}
+        - - name: call-katana-binary-scanner-save
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{item}}'`}}
+            templateRef:
+              name: level2-domain-katana
+              template: 获取子域名-katana爬虫二进制-xray扫描-保存结果
+            withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}
+            when: {{`'"{{inputs.parameters.crawler-way}}" == "katana-binary"'`}}
+
+  podGC:
+    strategy: OnPodCompletion
+  ttlStrategy:
+    secondsAfterCompletion: 300

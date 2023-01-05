@@ -3,11 +3,11 @@ kind: WorkflowTemplate
 metadata:
   labels:
     workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
-  name: httpx
+  name: level1-httpx
 spec:
   arguments: {}
   templates:
-    - name: probe-80-443-from-file
+    - name: probe-80-443-from-file  # 只被katana调用
       inputs:
         artifacts:
           - name: hosts
@@ -18,10 +18,8 @@ spec:
             path: /tmp/result
       container:
         image: projectdiscovery/httpx:v1.2.4
+        command:
+          - 'sh'
         args:
-          - '-l'
-          - '/tmp/hosts'
-          - '-p'
-          - 'http:80,https:443'
-          - '-o'
-          - '/tmp/result'
+          - "-c"
+          - "httpx -l /tmp/hosts -p http:80,https:443 -fc 404,403,500 -fhr -o /tmp/1 && awk '{print $1}' /tmp/1 > /tmp/result"
