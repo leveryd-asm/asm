@@ -130,3 +130,23 @@ xray扫描的漏洞也会通过webhook推送到企业微信群。
 
 当然你也可以定义自己的任务模板，可以参考`helm/templates/argo`目录下的模板文件。
 
+## 贡献者 ✨
+
+欢迎任何形式的贡献! 感谢这些优秀的贡献者，是他们让我们的项目快速成长。
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center"><a href="https://github.com/Evilran"><img src="https://avatars.githubusercontent.com/u/8848173?v=4?s=100" width="100px;" alt="pixiake"/><br /><sub><b>Evilran</b></sub></a><br /></td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
