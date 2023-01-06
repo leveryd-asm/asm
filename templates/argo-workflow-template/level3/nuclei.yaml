@@ -39,7 +39,7 @@ spec:
               name: level2-domain-nuclei
               template: 获取子域名-nuclei扫描-保存结果
             withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}
-            when: {{`'{{inputs.parameters.get-subdomain-way}} == "all" || {{inputs.parameters.get-subdomain-way}} == "subfinder"'`}}
+            when: {{`'"{{inputs.parameters.get-subdomain-way}}" == "all" || "{{inputs.parameters.get-subdomain-way}}" == "subfinder"'`}}
         - - name: call-subdomain-nuclei-save-2
             arguments:
               parameters:
@@ -49,7 +49,7 @@ spec:
               name: level2-domain-nuclei
               template: oneforall获取子域名-nuclei扫描-保存结果
             withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}
-            when: {{`'{{inputs.parameters.get-subdomain-way}} == "all" || {{inputs.parameters.get-subdomain-way}} == "oneforall"'`}}
+            when: {{`'"{{inputs.parameters.get-subdomain-way}}" == "all" || "{{inputs.parameters.get-subdomain-way}}" == "oneforall"'`}}
 
     - name: 输入域名列表-获取子域名-nuclei扫描-保存结果
       inputs:
@@ -75,7 +75,7 @@ spec:
               name: level2-domain-nuclei
               template: 获取子域名-nuclei扫描-保存结果
             withParam: {{`'{{inputs.parameters.domain-list}}'`}}
-            when: {{`'{{inputs.parameters.get-subdomain-way}} == "all" || {{inputs.parameters.get-subdomain-way}} == "subfinder"'`}}
+            when: {{`'"{{inputs.parameters.get-subdomain-way}}" == "all" || "{{inputs.parameters.get-subdomain-way}}" == "subfinder"'`}}
         - - name: call-subdomain-nuclei-save-2
             arguments:
               parameters:
@@ -85,7 +85,7 @@ spec:
               name: level2-domain-nuclei
               template: oneforall获取子域名-nuclei扫描-保存结果
             withParam: {{`'{{inputs.parameters.domain-list}}'`}}
-            when: {{`'{{inputs.parameters.get-subdomain-way}} == "all" || {{inputs.parameters.get-subdomain-way}} == "oneforall"'`}}
+            when: {{`'"{{inputs.parameters.get-subdomain-way}}" == "all" || "{{inputs.parameters.get-subdomain-way}}" == "oneforall"'`}}
 
   podGC:
     strategy: OnPodCompletion

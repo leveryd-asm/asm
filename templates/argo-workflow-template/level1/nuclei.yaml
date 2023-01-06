@@ -51,7 +51,12 @@ spec:
             exposures,misconfiguration,cnvd,vulnerabilities,workflows,exposed-panels
           - '-es'
           - info
+          {{ if .Values.interactsh_server }}
+          - '-iserver'
+          - '{{ .Values.interactsh_server }}'
+          {{ else }}
           - '-ni'
+          {{ end }}
           - '-o'
           - /tmp/nuclei-result.json
   ttlStrategy:

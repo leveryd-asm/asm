@@ -65,5 +65,9 @@ server:
 
 console_domain: console.com   # ingress domain
 
+# nuclei
+# visit https://app.interactsh.com/ to get your unique domain
+interactsh_server: "cevxtvb2vtc0000fwy30g8p67payyyyyb.oast.fun"
+
 # security
 user_can_deploy_workflowtemplate: true  # if u set false, it will be more security, because user can only run certain task
