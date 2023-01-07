@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: update-nuclei-template
+spec:
+  # run everyd two hour
+  schedule: "0 */2 * * *"
+  suspend: false
+  workflowSpec:
+    entrypoint: update-nuclei-template
+    workflowTemplateRef:
+      name: util-update-nuclei-template
+  podGC:
+    strategy: OnPodCompletion
+  ttlStrategy:
+    secondsAfterCompletion: 300

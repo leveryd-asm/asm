@@ -22,4 +22,4 @@ spec:
           - 'sh'
         args:
           - "-c"
-          - "httpx -l /tmp/hosts -p http:80,https:443 -fc 404,403,500 -fhr -o /tmp/1 && awk '{print $1}' /tmp/1 > /tmp/result"
+          - "httpx -l /tmp/hosts -p http:80,https:443 -fc 404,403,500,301,302 -ct -o /tmp/1 && grep -i html /tmp/1 | awk '{print $1}' /tmp/1 > /tmp/result"
