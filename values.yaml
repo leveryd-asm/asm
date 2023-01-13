@@ -71,3 +71,15 @@ interactsh_server: "cevxtvb2vtc0000fwy30g8p67payyyyyb.oast.fun"
 
 # security
 user_can_deploy_workflowtemplate: true  # if u set false, it will be more security, because user can only run certain task
+
+# elasticsearch
+elasticsearch:
+  replicas: 1   # single node
+# kibana
+kibana:
+  elasticsearchHosts: "http://elasticsearch-master:9200"
+  kibanaConfig:
+     kibana.yml: |
+      server.base="/kibana"
+      server.rewriteBasePath=true
+# healthCheckPath: "/kibana"
