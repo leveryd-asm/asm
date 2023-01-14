@@ -19,7 +19,10 @@ spec:
             - "sh"
           args:
             - "-c"
-            - "proxify -elastic-address 10.233.3.77:9200 -sa 0.0.0.0:10080"   # TODO: replace the fixed address
+            - "ip=`nslookup elasticsearch-master|grep -i Address|grep -v ':53'|awk '{print $2}'` && proxify -elastic-address ${ip}:9200 -sa 0.0.0.0:10080"
+          resources:
+            limits:
+              memory: 3000Mi
   selector:
     matchLabels:
       app: external-proxy
