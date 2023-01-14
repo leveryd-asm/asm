@@ -1,0 +1,142 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-script
+data:
+  init.py: |
+    import time
+    import json
+    import urllib.request
+
+    TEMPLATE_NAME="my_template"
+    PIPELINE_NAME="proxify_pipeline"
+    INDEX_PATTERN="proxify*"
+    SHARD_COUNT=1
+    REPLICA_COUNT=0
+    ES_URL="http://127.0.0.1:9200"
+    #ES_URL="http://192.168.0.110:9200"
+
+    headers = {"Content-Type": "application/json"}
+
+    while True:
+        try:
+            request = urllib.request.Request(ES_URL)
+            response = urllib.request.urlopen(request)
+            if response.status != 200:
+                time.sleep(1)
+            else:
+                break
+        except:
+            pass
+
+    # set REPLICA_COUNT=0 for single node
+    url = ES_URL + "/_template/" + TEMPLATE_NAME
+    data = {"index_patterns":[INDEX_PATTERN],"settings":{"number_of_shards":SHARD_COUNT,"number_of_replicas": REPLICA_COUNT}}
+    request = urllib.request.Request(url, headers=headers, data=json.dumps(data).encode(), method='PUT')
+    response = urllib.request.urlopen(request)
+    #print(url)
+    #print(json.dumps(data))
+    #print(response.read())
+
+    # create pipeline
+    pipeline = {
+      "processors":[
+      {
+        "script": {
+          "source": "int max_length = 10000;\n//string request = ctx[\"request\"];\nif ( ctx[\"request\"].length() > max_length){\n    ctx[\"request\"] = ctx[\"request\"].substring(0,max_length);\n}\nif ( ctx[\"response\"].length() > max_length){\n    ctx[\"response\"] = ctx[\"response\"].substring(0,max_length);\n}",
+
+          "ignore_failure": True
+        }
+      },
+      {
+        "grok": {
+          "field": "request",
+          "patterns": [
+        "%{WORD:method} %{URIPATHPARAM:uri} HTTP/%{GREEDYDATA:version}\r\n%{Header:header}"
+          ],
+          "pattern_definitions": {
+        "Host": "(?![\\s\\S]*Host:)([\\s\\S]*)",
+        "Header": "([\\s\\S]*?)\\r\\n\\r\\n"
+          },
+          "ignore_failure": True,
+          "description": "request header"
+        }
+      },
+      {
+        "grok": {
+          "field": "header",
+          "patterns": [
+        "%{ANYTHING}Host:%{BLANK}%{THING:host}\r"
+          ],
+          "pattern_definitions": {
+        "ANYTHING": "[\\s\\S]*",
+        "BLANK": "\\s*",
+        "THING": ".*"
+          },
+          "ignore_failure": True,
+          "description": "request host"
+        }
+      },
+      {
+        "grok": {
+          "field": "header",
+          "patterns": [
+        "%{ANYTHING}Content-Type:%{BLANK}%{THING:request_content_type}\r"
+          ],
+          "pattern_definitions": {
+        "ANYTHING": "[\\s\\S]*",
+        "BLANK": "\\s*",
+        "THING": ".*"
+          },
+          "ignore_failure": True,
+          "description": "request content-type"
+        }
+      },
+      {
+        "grok": {
+          "field": "response",
+          "patterns": [
+        "HTTP/%{INT}.%{INT} %{INT:status_code}%{THING}\r\n%{ANYTHING:response_header}\r\n\r\n"
+          ],
+          "pattern_definitions": {
+        "ANYTHING": "[\\s\\S]*?",
+        "THING": ".*"
+          },
+          "ignore_failure": True,
+          "description": "response status_code/header"
+        }
+      },
+      {
+        "grok": {
+          "field": "response_header",
+          "patterns": [
+        "%{ANYTHING}Content-Type:%{BLANK}%{THING:response_content_type}\r"
+          ],
+          "pattern_definitions": {
+        "ANYTHING": "[\\s\\S]*",
+        "BLANK": "\\s*",
+        "THING": ".*"
+          },
+          "ignore_failure": True,
+          "description": "response content-type"
+        }
+      }
+    ]
+    }
+
+    url = ES_URL + "/_ingest/pipeline/" + PIPELINE_NAME
+    request = urllib.request.Request(url, data=json.dumps(pipeline).encode(), method='PUT', headers=headers)
+    response = urllib.request.urlopen(request)
+
+    # apply the pipeline to proxify index
+    url = ES_URL + "/proxify/_settings"
+    data = {
+      "index": {
+        "default_pipeline": PIPELINE_NAME
+      }
+    }
+    request = urllib.request.Request(url, data=json.dumps(data).encode(), method='PUT', headers=headers)
+    response = urllib.request.urlopen(request)
+
+    while True:
+      time.sleep(10000)

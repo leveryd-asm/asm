@@ -75,7 +75,29 @@ user_can_deploy_workflowtemplate: true  # if u set false, it will be more securi
 # elasticsearch
 elasticsearch:
   replicas: 1   # single node
-# kibana
+  extraVolumes:
+    - name: init-script
+      configMap:
+        name: init-script
+        items:
+          - key: init.py
+            path: init.py
+  extraContainers:
+    - name: init-es-pipeline
+      image: python:3.8
+      command:
+        - python
+      args:
+        - '-u'
+        - /tmp/init.py
+      env:
+        - name: PYTHONUNBUFFERED
+          value: '1'
+      volumeMounts:
+        - name: init-script
+          mountPath: /tmp/init.py
+          subPath: init.py
+
 kibana:
   elasticsearchHosts: "http://elasticsearch-master:9200"
   kibanaConfig:
