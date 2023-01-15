@@ -41,88 +41,93 @@ data:
     # create pipeline
     pipeline = {
       "processors":[
-      {
-        "script": {
-          "source": "int max_length = 10000;\n//string request = ctx[\"request\"];\nif ( ctx[\"request\"].length() > max_length){\n    ctx[\"request\"] = ctx[\"request\"].substring(0,max_length);\n}\nif ( ctx[\"response\"].length() > max_length){\n    ctx[\"response\"] = ctx[\"response\"].substring(0,max_length);\n}",
-
-          "ignore_failure": True
-        }
-      },
-      {
-        "grok": {
-          "field": "request",
-          "patterns": [
-        "%{WORD:method} %{URIPATHPARAM:uri} HTTP/%{GREEDYDATA:version}\r\n%{Header:header}"
-          ],
-          "pattern_definitions": {
-        "Host": "(?![\\s\\S]*Host:)([\\s\\S]*)",
-        "Header": "([\\s\\S]*?)\\r\\n\\r\\n"
-          },
-          "ignore_failure": True,
-          "description": "request header"
-        }
-      },
-      {
-        "grok": {
-          "field": "header",
-          "patterns": [
-        "%{ANYTHING}Host:%{BLANK}%{THING:host}\r"
-          ],
-          "pattern_definitions": {
-        "ANYTHING": "[\\s\\S]*",
-        "BLANK": "\\s*",
-        "THING": ".*"
-          },
-          "ignore_failure": True,
-          "description": "request host"
-        }
-      },
-      {
-        "grok": {
-          "field": "header",
-          "patterns": [
-        "%{ANYTHING}Content-Type:%{BLANK}%{THING:request_content_type}\r"
-          ],
-          "pattern_definitions": {
-        "ANYTHING": "[\\s\\S]*",
-        "BLANK": "\\s*",
-        "THING": ".*"
-          },
-          "ignore_failure": True,
-          "description": "request content-type"
-        }
-      },
-      {
-        "grok": {
-          "field": "response",
-          "patterns": [
-        "HTTP/%{INT}.%{INT} %{INT:status_code}%{THING}\r\n%{ANYTHING:response_header}\r\n\r\n"
-          ],
-          "pattern_definitions": {
-        "ANYTHING": "[\\s\\S]*?",
-        "THING": ".*"
-          },
-          "ignore_failure": True,
-          "description": "response status_code/header"
-        }
-      },
-      {
-        "grok": {
-          "field": "response_header",
-          "patterns": [
-        "%{ANYTHING}Content-Type:%{BLANK}%{THING:response_content_type}\r"
-          ],
-          "pattern_definitions": {
-        "ANYTHING": "[\\s\\S]*",
-        "BLANK": "\\s*",
-        "THING": ".*"
-          },
-          "ignore_failure": True,
-          "description": "response content-type"
-        }
+    {
+      "script": {
+        "source": "int max_length = 10000;\n//string request = ctx[\"request\"];\nif ( ctx[\"request\"].length() > max_length){\n    ctx[\"request\"] = ctx[\"request\"].substring(0,max_length);\n}\nif ( ctx[\"response\"].length() > max_length){\n    ctx[\"response\"] = ctx[\"response\"].substring(0,max_length);\n}",
+        "ignore_failure": True
       }
-    ]
+    },
+    {
+      "grok": {
+        "field": "request",
+        "patterns": [
+          "%{WORD:method} %{URIPATHPARAM:uri} HTTP/%{GREEDYDATA:version}\r\n%{Header:header}"
+        ],
+        "pattern_definitions": {
+          "Host": "(?![\\s\\S]*Host:)([\\s\\S]*)",
+          "Header": "([\\s\\S]*?)\\r\\n\\r\\n"
+        },
+        "ignore_failure": True,
+        "description": "request header"
+      }
+    },
+    {
+      "grok": {
+        "field": "header",
+        "patterns": [
+          "%{ANYTHING}Host:%{BLANK}%{THING:host}\r"
+        ],
+        "pattern_definitions": {
+          "ANYTHING": "[\\s\\S]*",
+          "BLANK": "\\s*",
+          "THING": ".*"
+        },
+        "ignore_failure": True,
+        "description": "request host"
+      }
+    },
+    {
+      "grok": {
+        "field": "header",
+        "patterns": [
+          "%{ANYTHING}Content-Type:%{BLANK}%{THING:request_content_type}\r"
+        ],
+        "pattern_definitions": {
+          "ANYTHING": "[\\s\\S]*",
+          "BLANK": "\\s*",
+          "THING": ".*"
+        },
+        "ignore_failure": True,
+        "description": "request content-type"
+      }
+    },
+    {
+      "grok": {
+        "field": "response",
+        "patterns": [
+          "HTTP/%{INT}.%{INT} %{INT:status_code}%{THING}\r\n%{ANYTHING:response_header}\r\n\r\n%{X:response_body}"
+        ],
+        "pattern_definitions": {
+          "ANYTHING": "[\\s\\S]*?",
+          "THING": ".*",
+          "X": "[\\s\\S]*"
+        },
+        "ignore_failure": True,
+        "description": "response status_code/header"
+      }
+    },
+    {
+      "grok": {
+        "field": "response_header",
+        "patterns": [
+          "%{ANYTHING}Content-Type:%{BLANK}%{THING:response_content_type}\r"
+        ],
+        "pattern_definitions": {
+          "ANYTHING": "[\\s\\S]*",
+          "BLANK": "\\s*",
+          "THING": ".*"
+        },
+        "ignore_failure": True,
+        "description": "response content-type"
+      }
+    },
+    {
+      "script": {
+        "source": "ctx[\"url\"] = ctx[\"host\"] + ctx[\"uri\"];\nctx[\"tag\"] = []",
+        "ignore_failure": True
+      }
     }
+    ]}
 
     url = ES_URL + "/_ingest/pipeline/" + PIPELINE_NAME
     request = urllib.request.Request(url, data=json.dumps(pipeline).encode(), method='PUT', headers=headers)
