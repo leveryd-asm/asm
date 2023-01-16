@@ -62,7 +62,7 @@ kubectl apply -f https://github.com/kubesphere/ks-installer/releases/download/v3
 kubectl apply -f https://github.com/kubesphere/ks-installer/releases/download/v3.3.1/cluster-configuration.yaml
 ```
 
-> 详细安装步骤参考 [kubesphere](https://kubesphere.io/docs/quick-start/minimal-kubesphere-on-k8s/)
+> 详细安装步骤参考 [kubesphere](https://kubesphere.io/docs/quick-start/minimal-kubesphere-on-k8s/)。或者你可以用[适用于国内网络环境的kubekey项目](https://github.com/kubesphere/kubekey/)一键部署kubernetes和kubesphere。
 
 如果你不需要kubesphere，可以使用`ingress-nginx`作为`ingress controller`。
 

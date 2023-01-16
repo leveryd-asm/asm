@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  labels:
+    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+  name: util-update-nuclei-template
+spec:
+  volumes:
+    - name: template-dir
+      persistentVolumeClaim:
+        claimName: nuclei-template
+
+  templates:
+    - name: update-nuclei-template
+      container:
+        image: projectdiscovery/nuclei:v2.8.3
+        command:
+          - 'sh'
+        args:
+          - '-c'
+          - 'nuclei --target 127.0.0.1 -id CVE-2021-44228 -debug -ut && ls -al /root/nuclei-templates'
+        volumeMounts:
+          - name: template-dir
+            mountPath: /root/nuclei-templates

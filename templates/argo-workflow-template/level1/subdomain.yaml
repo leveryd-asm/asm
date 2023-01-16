@@ -40,6 +40,57 @@ spec:
           - '-o'
           - '/tmp/result'
 
+    - name: get-subdomain
+      inputs:
+        parameters:
+          - name: domain
+            description: '域名，比如 apple.com'
+          - name: get-subdomain-way
+            description: "哪种方式扫描子域名"
+            default: "all"
+            enum:
+              - "all"
+              - "oneforall"
+              - "subfinder"
+      outputs:
+        artifacts:
+          - name: subdomains
+            path: /tmp/result
+      volumes:
+        - name: workspace
+          emptyDir: {}
+      containerSet:
+        volumeMounts:
+          - mountPath: /tmp
+            name: workspace
+        containers:
+          - name: oneforall
+            image: shmilylty/oneforall:version-0.4.3
+            command:
+              - sh
+            args:
+              - -c
+              - python3 oneforall.py --target {{`{{inputs.parameters.domain}}`}} --dns false run && cat /OneForAll/results/{{`{{inputs.parameters.domain}}`}}.csv | awk -F ',' '{print $6}'|tail -n +2 |sort|uniq > /tmp/oneforall
+
+          - name: subfinder
+            image: 'projectdiscovery/subfinder:v2.5.5'
+            args:
+              - '-d'
+              - {{`'{{inputs.parameters.domain}}'`}}
+              - '-o'
+              - '/tmp/subfinder'
+
+          - name: main
+            image: ubuntu:lunar-20221207
+            command:
+              - sh
+            args:
+              - -c
+              - "wc -l /tmp/* && cat /tmp/* | sort | uniq > /tmp/result && wc -l /tmp/result"
+            dependencies:
+              - subfinder
+              - oneforall
+              
     - name: get-subdomains-from-es
       inputs:
         parameters:

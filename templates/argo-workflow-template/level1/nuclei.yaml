@@ -16,16 +16,20 @@ spec:
             description: 'nuclei 规则id'
       container:
         image: projectdiscovery/nuclei:v2.8.3
-        command:
-          - nuclei
         args:
           - '--target'
           - {{`'{{inputs.parameters.domain}}'`}}
           - '-id'
           - {{`'{{inputs.parameters.id}}'`}}
           - '-debug'
-          - '-o'
-          - /tmp/nuclei-result.json
+          - '-duc'
+        volumeMounts:
+          - name: template-dir
+            mountPath: /root/nuclei-templates
+      volumes:
+        - name: template-dir
+          persistentVolumeClaim:
+            claimName: nuclei-template
       retryStrategy:
         limit: "3"
         retryPolicy: "Always"
@@ -41,9 +45,8 @@ spec:
             path: /tmp/nuclei-result.json
       container:
         image: 'projectdiscovery/nuclei:v2.8.3'
-        command:
-          - nuclei
         args:
+          - '-duc'
           - '-l'
           - /tmp/host
           - '-t'
@@ -59,6 +62,13 @@ spec:
           {{ end }}
           - '-o'
           - /tmp/nuclei-result.json
+        volumeMounts:
+          - name: template-dir
+            mountPath: /root/nuclei-templates
+      volumes:
+        - name: template-dir
+          persistentVolumeClaim:
+            claimName: nuclei-template
   ttlStrategy:
     secondsAfterCompletion: 3000
   podGC:
