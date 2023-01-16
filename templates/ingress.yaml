@@ -1,0 +1,49 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argo
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - host: {{.Values.console_domain}}
+      http:
+        paths:
+          - path: /argo(/|$)(.*) # match all paths that begin with /argo/
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: argo-workflows-app-server   # name of the service
+                port:
+                  number: 2746
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: console
+spec:
+  rules:
+    - host: {{.Values.console_domain}}
+      http:
+        paths:
+          - backend:
+              service:
+                name: {{.Values.console_api_service_name}}
+                port:
+                  number: 80
+            path: /api
+            pathType: ImplementationSpecific
+          - backend:
+              service:
+                name: console-fe-service
+                port:
+                  number: 65533
+            path: /
+            pathType: ImplementationSpecific
+{{/*          - path: /argo*/}}
+{{/*            pathType: ImplementationSpecific*/}}
+{{/*            backend:*/}}
+{{/*              service:*/}}
+{{/*                name: release-name-argo-workflows-server*/}}
+{{/*                port:*/}}
+{{/*                  number: 2746*/}}

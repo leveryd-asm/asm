@@ -90,6 +90,26 @@ spec:
             dependencies:
               - subfinder
               - oneforall
+              
+    - name: get-subdomains-from-es
+      inputs:
+        parameters:
+          - name: domain
+            description: '域名，比如 apple.com'
+      outputs:
+        artifacts:
+          - name: subdomains
+            path: /tmp/result
+      container:
+        image: 'leveryd/x-tool:v2023.1.16'
+        args:
+          - 'subdomain'
+          - '-esURL'
+          - 'http://elasticsearch-master:9200'  # elasticsearch-master 是es的服务名
+          - '-domain'
+          - {{`'{{inputs.parameters.domain}}'`}}
+          - '-of'
+          - '/tmp/result'
 
   ttlStrategy:
     secondsAfterCompletion: 3000

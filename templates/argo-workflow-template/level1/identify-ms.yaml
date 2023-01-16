@@ -3,39 +3,45 @@ kind: WorkflowTemplate
 metadata:
   labels:
     workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
-  name: level1-save-alarm
+  name: level1-identify-ms
 spec:
   arguments: {}
   templates:
-    - name: save-nuclei
+    - name: level1-identify-ms-from-url-file
       inputs:
+        artifacts:
+          - name: urls
+            path: /tmp/urls.txt
+      outputs:
         artifacts:
           - name: result
             path: /tmp/result
       container:
         image: 'leveryd/x-tool:v2023.1.16'
         args:
-          - 'nuclei'
-          - '-f'
-          - /tmp/result
-          - '-api'
-          - 'http://{{.Values.console_api_service_name}}:{{.Values.console_api_service_port}}'
-
-    - name: save-ms-screenshot
-      inputs:
-        artifacts:
-          - name: result
-            path: /tmp/result
-      container:
-        image: 'leveryd/x-tool:v2023.1.16'
-        args:
-          - 'console'
+          - 'ims'
           - '-if'
+          - '/tmp/urls.txt '
+          - '-of'
           - '/tmp/result'
-          - '-module'
-          - 'ms'
-          - '-url'
-          - 'http://{{.Values.console_api_service_name}}:{{.Values.console_api_service_port}}'
+
+    - name: level1-identify-ms-from-one-url
+      inputs:
+        parameters:
+          - name: url
+            description: 'url eg. https://www.baidu.com'
+      outputs:
+        artifacts:
+          - name: result
+            path: /tmp/result
+      container:
+        image: 'leveryd/x-tool:v2023.1.16'
+        args:
+          - 'ims'
+          - '-u'
+          - {{`'{{inputs.parameters.url}}'`}}
+          - '-of'
+          - '/tmp/result'
 
   ttlStrategy:
     secondsAfterCompletion: 3000

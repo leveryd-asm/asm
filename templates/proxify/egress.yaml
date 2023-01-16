@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-proxy
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: external-proxy
+    spec:
+      containers:
+        - name: proxy
+          image: leveryd/proxify:v0.0.8
+          ports:
+            - containerPort: 10080
+          command:
+            - "sh"
+          args:
+            - "-c"
+            - "ip=`nslookup elasticsearch-master|grep -i Address|grep -v ':53'|awk '{print $2}'` && proxify -elastic-address ${ip}:9200 -sa 0.0.0.0:10080"
+          resources:
+            limits:
+              memory: 3000Mi
+  selector:
+    matchLabels:
+      app: external-proxy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-proxy-service
+spec:
+  selector:
+    app: external-proxy
+  ports:
+    - protocol: TCP
+      port: 1080
+      targetPort: 10080

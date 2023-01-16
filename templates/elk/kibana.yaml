@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kibana
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - host: {{.Values.console_domain}}
+      http:
+        paths:
+          - path: /kibana(/|$)(.*) # match all paths that begin with /argo/
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: release-name-kibana   # name of the service
+                port:
+                  number: 5601
