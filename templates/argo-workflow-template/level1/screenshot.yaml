@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  labels:
+    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+  name: level1-screenshot
+spec:
+  arguments: {}
+  templates:
+    - name: level1-screenshot-from-url-file
+      inputs:
+        artifacts:
+          - name: urls
+            path: /tmp/urls.txt
+      outputs:
+        artifacts:
+          - name: result
+            path: /tmp/result
+      container:
+        image: 'leveryd/x-tool:v2023.1.16'
+        args:
+          - 'ss'
+          - '-sssUrl'
+          - 'http://browserless-service'
+          - '-if'
+          - '/tmp/urls.txt'
+          - '-of'
+          - '/tmp/result'
+          - '-ot'
+          - 'csv'
+
+    - name: level1-screenshot-from-one-url
+      inputs:
+        parameters:
+          - name: url
+            description: 'url eg. https://www.baidu.com'
+      outputs:
+        artifacts:
+          - name: result
+            path: /tmp/
+      container:
+        image: 'leveryd/x-tool:v2023.1.16'
+        args:
+          - 'ss'
+          - '-sssUrl'
+          - 'http://browserless-service'
+          - '-u'
+          - {{`'{{inputs.parameters.url}}'`}}
+          - '-of'
+          - '/tmp/'
+          - '-ot'
+          - 'dir'
+{{/*        env:*/}}
+{{/*          - name: ARGO_DEBUG_PAUSE_AFTER*/}}
+{{/*            value: 'true'*/}}
+
+  ttlStrategy:
+    secondsAfterCompletion: 3000
+  podGC:
+    strategy: OnPodCompletion
