@@ -1,14 +1,4 @@
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: redis-conf
-data:
-  redis.conf: |-
-    requirepass {{.Values.password}}
-    bind 0.0.0.0
-    logfile /data/redis-server.log
----
-apiVersion: v1
 data:
   console-api.yaml: |-
     Name: console-api
@@ -128,4 +118,16 @@ data:
         `uploaddate`        varchar(50)  DEFAULT NULL,
         PRIMARY KEY (`id`),
         UNIQUE KEY `unique_finger_print` (`address`,`port`,`service`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+    CREATE TABLE `ms`
+    (
+        `id`         int(11) NOT NULL AUTO_INCREMENT,
+        `url`  varchar(2000) DEFAULT NULL,
+        `screenshot` mediumtext DEFAULT NULL,
+        `status`     varchar(20)   DEFAULT NULL,
+        `alarm_md5`  varchar(60)   DEFAULT NULL,
+        `uploaddate` varchar(30)   DEFAULT NULL,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `alarm_md5` (`alarm_md5`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
