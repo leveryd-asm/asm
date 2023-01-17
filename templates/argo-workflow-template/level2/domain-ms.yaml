@@ -1,0 +1,71 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  labels:
+    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+  name: level2-domain-ms
+spec:
+  templates:
+    - name: 获取子域名-ms扫描-保存结果
+      inputs:
+        parameters:
+          - name: domain
+            description: "域名 例如: apple.com"
+          - name: get-subdomain-way
+            description: "哪种方式扫描子域名 subfinder,oneforall,es,mysql"
+            default: "subfinder,es,mysql"
+          - name: save-subdomain-result
+            description: "是否保存子域名结果"
+            default: "false"
+            enum: ["true", "false"]
+          - name: port-range
+            description: "端口范围 例如: 1-65535"
+            default: "http:80,https:443"
+      steps:
+        - - name: call-get-subdomains-save
+            templateRef:
+              name: level2-save-subdomains
+              template: get-subdomains-save
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{inputs.parameters.domain}}'`}}
+                - name: get-subdomain-way
+                  value: {{`'{{inputs.parameters.get-subdomain-way}}'`}}
+                - name: save-subdomain-result
+                  value: {{`'{{inputs.parameters.save-subdomain-result}}'`}}
+        - - name: call-httpx
+            templateRef:
+              name: level1-httpx
+              template: probe-from-file
+            arguments:
+              parameters:
+                - name: port-range
+                  value: {{`'{{inputs.parameters.port-range}}'`}}
+              artifacts:
+                - name: hosts
+                  from: {{`"{{workflow.outputs.artifacts.subdomains}}"`}}
+        - - name: call-level1-identify-ms-from-url-file
+            templateRef:
+              name: level1-identify-ms
+              template: level1-identify-ms-from-url-file
+            arguments:
+              artifacts:
+                - name: urls
+                  from: {{`'{{steps.call-httpx.outputs.artifacts.urls}}'`}}
+        - - name: call-level1-screenshot-from-urls
+            templateRef:
+              name: level1-screenshot
+              template: level1-screenshot-from-url-file
+            arguments:
+              artifacts:
+                - name: urls
+                  from: {{`'{{steps.call-level1-identify-ms-from-url-file.outputs.artifacts.result}}'`}}
+        - - name: call-save-ms-screenshot
+            templateRef:
+              name: level1-save-alarm
+              template: save-ms-screenshot
+            arguments:
+              artifacts:
+                - name: result
+                  from: {{`'{{steps.call-level1-screenshot-from-urls.outputs.artifacts.result}}'`}}

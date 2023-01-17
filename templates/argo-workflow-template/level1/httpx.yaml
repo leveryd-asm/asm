@@ -22,4 +22,25 @@ spec:
           - 'sh'
         args:
           - "-c"
-          - "httpx -l /tmp/hosts -p http:80,https:443 -fc 404,403,500,301,302 -ct -o /tmp/1 && grep -i html /tmp/1 | awk '{print $1}' /tmp/1 > /tmp/result"
+          - "httpx -l /tmp/hosts -p http:80,https:443 -fc 404,403,500,301,302 -ct -o /tmp/1 && grep -i html /tmp/1 | awk '{print $1}' > /tmp/result"
+
+    - name: probe-from-file
+      inputs:
+        artifacts:
+          - name: hosts
+            path: /tmp/hosts
+        parameters:
+          - name: port-range
+            value: "http:80,https:443"
+      outputs:
+        artifacts:
+          - name: urls
+            path: /tmp/result
+      container:
+        image: projectdiscovery/httpx:v1.2.4
+        command:
+          - 'sh'
+        args:
+          - "-c"
+          - "httpx -l /tmp/hosts -p {{`{{inputs.parameters.port-range}}`}} -fc 404,403,500 -ct -o /tmp/1 && grep -i html /tmp/1 | awk '{print $1}' > /tmp/result"
+
