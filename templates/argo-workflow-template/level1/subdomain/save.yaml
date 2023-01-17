@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  labels:
+    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+  name: level1-save-subdomains
+spec:
+  templates:
+    - name: save-subdomains
+      inputs:
+        artifacts:
+          - name: subdomains
+            path: /tmp/subdomains
+        parameters:
+          - name: domain
+            description: 'parent domain, eg apple.com'
+      container:
+        image: 'leveryd/x-tool:v2023.1.16'
+        command:
+          - 'sh'
+        args:
+          - '-c'
+          - 'x subdomain -action save  -source console -domain {{`{{inputs.parameters.domain}}`}} -if /tmp/subdomains -consoleUrl http://{{.Values.console_api_service_name}}:{{.Values.console_api_service_port}}'

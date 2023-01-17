@@ -10,51 +10,31 @@ spec:
       inputs:
         parameters:
           - name: domain
+          - name: get-subdomain-way
+            description: "哪种方式扫描子域名 subfinder,oneforall,es,mysql"
+            default: "subfinder,es,mysql"
+          - name: save-subdomain-result
+            description: "是否保存子域名结果"
+            default: "false"
+            enum: ["true", "false"]
       steps:
-        - - name: call-get-subdomains
+        - - name: call-get-subdomains-save
             arguments:
               parameters:
                 - name: domain
                   value: {{`'{{inputs.parameters.domain}}'`}}
+                - name: get-subdomain-way
+                  value: {{`'{{inputs.parameters.get-subdomain-way}}'`}}
+                - name: save-subdomain-result
+                  value: {{`'{{inputs.parameters.save-subdomain-result}}'`}}
             templateRef:
-              name: level1-get-subdomains
-              template: subfinder
+              name: level2-save-subdomains
+              template: get-subdomains-save
         - - name: call-nuclei-scan
             arguments:
               artifacts:
                 - name: hosts
-                  from: {{`'{{steps.call-get-subdomains.outputs.artifacts.subdomains}}'`}}
-            templateRef:
-              name: level1-nuclei
-              template: nuclei-scan
-        - - name: call-save-nuclei-alarm
-            arguments:
-              artifacts:
-                - from: {{`'{{steps.call-nuclei-scan.outputs.artifacts.nuclei-result}}'`}}
-                  name: result
-            templateRef:
-              name: level1-save-alarm
-              template: save-nuclei
-
-    - name: oneforall获取子域名-nuclei扫描-保存结果
-      inputs:
-        parameters:
-          - name: domain
-            description: "二级域名，比如 baidu.com"
-      steps:
-        - - name: call-get-subdomains
-            arguments:
-              parameters:
-                - name: domain
-                  value: {{`'{{inputs.parameters.domain}}'`}}
-            templateRef:
-              name: level1-get-subdomains
-              template: oneforall
-        - - name: call-nuclei-scan
-            arguments:
-              artifacts:
-                - name: hosts
-                  from: {{`'{{steps.call-get-subdomains.outputs.artifacts.subdomains}}'`}}
+                  from: {{`'{{workflow.outputs.artifacts.subdomains}}'`}}
             templateRef:
               name: level1-nuclei
               template: nuclei-scan

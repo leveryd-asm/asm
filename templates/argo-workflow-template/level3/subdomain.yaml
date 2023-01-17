@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  labels:
+    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+  name: level3-subdomain
+spec:
+  templates:
+    - name: 从API获取兄弟域名-获取子域名-保存结果
+      inputs:
+        parameters:
+          - name: query
+            value: 'limit=10000&offset=0&accurate=是'
+            description: "console api查询子域名时的条件"
+          - name: get-subdomain-way
+            description: "哪种方式扫描子域名 subfinder,oneforall,es,mysql"
+            default: "subfinder,es"
+      parallelism: 6   # todo:config
+      steps:
+        - - name: call-getrootdomain-from-console-api
+            arguments:
+              parameters:
+                - name: query
+                  value: {{`"{{inputs.parameters.query}}"`}}
+            templateRef:
+              name: level1-getrootdomain
+              template: from-console-api
+        - - name: call-get-subdomains-save
+            templateRef:
+              name: level2-save-subdomains
+              template: get-subdomains-save
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{item}}'`}}
+                - name: get-subdomain-way
+                  value: {{`"{{inputs.parameters.get-subdomain-way}}"`}}
+            withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}

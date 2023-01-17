@@ -39,20 +39,30 @@ spec:
         parameters:
           - name: domain
             description: "二级域名，比如 baidu.com"
+          - name: get-subdomain-way
+            description: "哪种方式扫描子域名 subfinder,oneforall,es,mysql"
+            default: "subfinder,es,mysql"
+          - name: save-subdomain-result
+            default: "false"
+            enum: ["true", "false"]
       steps:
-        - - name: call-subfinder
+        - - name: call-get-subdomains-save
+            templateRef:
+              name: level2-save-subdomains
+              template: get-subdomains-save
             arguments:
               parameters:
                 - name: domain
                   value: {{`'{{inputs.parameters.domain}}'`}}
-            templateRef:
-              name: level1-get-subdomains
-              template: subfinder
+                - name: get-subdomain-way
+                  value: {{`"{{inputs.parameters.get-subdomain-way}}"`}}
+                - name: save-subdomain-result
+                  value: {{`"{{inputs.parameters.save-subdomain-result}}"`}}
         - - name: call-katana-binary
             arguments:
               artifacts:
                 - name: domains
-                  from: {{`'{{steps.call-subfinder.outputs.artifacts.subdomains}}'`}}
+                  from: {{`'{{workflow.outputs.artifacts.subdomains}}'`}}   # global artifacts
             templateRef:
               name: level1-crawler
               template: katana-binary

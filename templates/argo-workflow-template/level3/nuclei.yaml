@@ -14,12 +14,12 @@ spec:
             value: 'limit=10000&offset=0&accurate=是'
             description: "console api查询子域名时的条件"
           - name: get-subdomain-way
-            description: "哪种方式扫描子域名"
-            value: all
-            enum:
-              - all
-              - subfinder
-              - oneforall
+            description: "哪种方式扫描子域名 subfinder,oneforall,es,mysql"
+            default: "subfinder,es,mysql"
+          - name: save-subdomain-result
+            default: "false"
+            enum: [ "true", "false" ]
+
       parallelism: 3 # 并发数
       steps:
         - - name: call-getrootdomain-from-console-api
@@ -30,26 +30,19 @@ spec:
             templateRef:
               name: level1-getrootdomain
               template: from-console-api
-        - - name: call-subdomain-nuclei-save-1
+        - - name: call-subdomain-nuclei-save
             arguments:
               parameters:
                 - name: domain
                   value: {{`'{{item}}'`}}
+                - name: get-subdomain-way
+                  value: {{`'{{inputs.parameters.get-subdomain-way}}'`}}
+                - name: save-subdomain-result
+                  value: {{`'{{inputs.parameters.save-subdomain-result}}'`}}
             templateRef:
               name: level2-domain-nuclei
               template: 获取子域名-nuclei扫描-保存结果
             withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}
-            when: {{`'"{{inputs.parameters.get-subdomain-way}}" == "all" || "{{inputs.parameters.get-subdomain-way}}" == "subfinder"'`}}
-        - - name: call-subdomain-nuclei-save-2
-            arguments:
-              parameters:
-                - name: domain
-                  value: {{`'{{item}}'`}}
-            templateRef:
-              name: level2-domain-nuclei
-              template: oneforall获取子域名-nuclei扫描-保存结果
-            withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}
-            when: {{`'"{{inputs.parameters.get-subdomain-way}}" == "all" || "{{inputs.parameters.get-subdomain-way}}" == "oneforall"'`}}
 
     - name: 输入域名列表-获取子域名-nuclei扫描-保存结果
       inputs:
@@ -58,35 +51,26 @@ spec:
             description: '待扫描的二级域名列表，比如["a.vulnweb.com", "b.vulnweb.com"]'
             value: '["xxx"]'
           - name: get-subdomain-way
-            description: "哪种方式扫描子域名"
-            value: all
-            enum:
-              - all
-              - subfinder
-              - oneforall
+            description: "哪种方式扫描子域名 subfinder,oneforall,es,mysql"
+            default: "subfinder,es,mysql"
+          - name: save-subdomain-result
+            default: "false"
+            enum: [ "true", "false" ]
       parallelism: 3
       steps:
-        - - name: call-subdomain-nuclei-save-1
+        - - name: call-subdomain-nuclei-save
             arguments:
               parameters:
                 - name: domain
                   value: {{`'{{item}}'`}}
+                - name: get-subdomain-way
+                  value: {{`'{{inputs.parameters.get-subdomain-way}}'`}}
+                - name: save-subdomain-result
+                  value: {{`'{{inputs.parameters.save-subdomain-result}}'`}}
             templateRef:
               name: level2-domain-nuclei
               template: 获取子域名-nuclei扫描-保存结果
             withParam: {{`'{{inputs.parameters.domain-list}}'`}}
-            when: {{`'"{{inputs.parameters.get-subdomain-way}}" == "all" || "{{inputs.parameters.get-subdomain-way}}" == "subfinder"'`}}
-        - - name: call-subdomain-nuclei-save-2
-            arguments:
-              parameters:
-                - name: domain
-                  value: {{`'{{item}}'`}}
-            templateRef:
-              name: level2-domain-nuclei
-              template: oneforall获取子域名-nuclei扫描-保存结果
-            withParam: {{`'{{inputs.parameters.domain-list}}'`}}
-            when: {{`'"{{inputs.parameters.get-subdomain-way}}" == "all" || "{{inputs.parameters.get-subdomain-way}}" == "oneforall"'`}}
-
   podGC:
     strategy: OnPodCompletion
   ttlStrategy:
@@ -108,9 +92,9 @@ spec:
         - name: domain-list
           value: '["xxx.com", "yyy.com"]'
         - name: get-subdomain-way
-          value: all
-          enum:
-            - all
-            - subfinder
-            - oneforall
+          description: "哪种方式扫描子域名 subfinder,oneforall,es,mysql"
+          default: "subfinder,es,mysql"
+        - name: save-subdomain-result
+          default: "false"
+          enum: [ "true", "false" ]
     entrypoint: 输入域名列表-获取子域名-nuclei扫描-保存结果

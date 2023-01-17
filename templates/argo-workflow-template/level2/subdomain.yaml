@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  labels:
+    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+  name: level2-save-subdomains
+spec:
+  templates:
+    - name: get-subdomains-save
+      description: 'Get subdomains and save to console'
+      inputs:
+        parameters:
+          - name: domain
+            description: '主域名, 如 apple.com'
+          - name: get-subdomain-way
+            description: "哪些方式扫描子域名，可选值 subfinder,oneforall,es,mysql"
+            default: "subfinder,es,mysql"
+          - name: save-subdomain-result
+            description: "是否保存子域名结果，可选值 true,false"
+            default: "true"
+      steps:
+        - - name: get-subdomains
+            templateRef:
+              name: level1-get-subdomains
+              template: get-subdomain
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{inputs.parameters.domain}}'`}}
+                - name: get-subdomain-way
+                  value: {{`'{{inputs.parameters.get-subdomain-way}}'`}}
+        - - name: save-subdomains
+            when: {{`"{{inputs.parameters.save-subdomain-result}} == true"`}}
+            templateRef:
+              name: level1-save-subdomains
+              template: save-subdomains
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{inputs.parameters.domain}}'`}}
+              artifacts:
+                - name: subdomains
+                  from: {{`'{{steps.get-subdomains.outputs.artifacts.subdomains}}'`}}
