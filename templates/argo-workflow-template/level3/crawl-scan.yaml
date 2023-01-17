@@ -5,11 +5,6 @@ metadata:
     workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
   name: level3-crawl-scan
 spec:
-  arguments:
-    parameters:
-      - name: xray-proxy-url
-        value: "http://10.233.62.230:58088"
-        description: "xray-proxy service address, e.g 'http://10.233.62.230:58088'"
   templates:
     - name: 从API获取兄弟域名-获取子域名-katana爬虫-xray扫描-保存结果
       inputs:

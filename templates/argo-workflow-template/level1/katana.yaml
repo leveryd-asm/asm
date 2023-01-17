@@ -5,12 +5,6 @@ metadata:
     workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
   name: level1-crawler
 spec:
-  arguments:
-    parameters:
-      - name: xray-proxy-url
-        value: "http://10.233.62.230:58088"
-        description: "xray-proxy service address, e.g 'http://10.233.62.230:58088'"
-
   templates:
     - name: katana-service-from-domains
       inputs:
@@ -96,21 +90,17 @@ spec:
           - name: url
             description: '待扫描的域名，比如 apple.com'
       container:
-        image: projectdiscovery/katana:v0.0.2
+        image: projectdiscovery/katana:v0.0.3
         args:
           - '-v'
           - '-u'
           - 'http://{{`{{inputs.parameters.url}}`}}'
-          # "leveryd.com" see crawler/coredns-config.yaml
           - '-proxy'
-          # - 'https://xray-proxy-service.{{.Release.Namespace}}.leveryd.com:{{.Values.xray_proxy_port}}'
-          # - 'http://10.233.62.230:{{.Values.xray_proxy_port}}'
-          - {{`"{{workflow.parameters.xray-proxy-url}}"`}}
+          - 'http://{{.Values.xray_proxy_service}}:{{.Values.xray_proxy_port}}'
           - '-system-chrome'
           - '-headless'
           - '-headless-options'
-          # - 'proxy-server=http://10.233.62.230:{{.Values.xray_proxy_port}}'
-          - 'proxy-server={{`{{workflow.parameters.xray-proxy-url}}`}}'
+          - 'proxy-server=http://{{.Values.xray_proxy_service}}:{{.Values.xray_proxy_port}}'
 
         resources: # limit the resources
           limits:
@@ -122,21 +112,18 @@ spec:
           - name: url
             description: '待扫描的url，比如 https://apple.com'
       container:
-        image: projectdiscovery/katana:v0.0.2
+        image: projectdiscovery/katana:v0.0.3
         args:
           - '-v'
           - '-u'
           - '{{`{{inputs.parameters.url}}`}}'
-          # "leveryd.com" see crawler/coredns-config.yaml
           - '-proxy'
-          # - 'https://xray-proxy-service.{{.Release.Namespace}}.leveryd.com:{{.Values.xray_proxy_port}}'
-          # - 'http://10.233.62.230:{{.Values.xray_proxy_port}}'
-          - {{`"{{workflow.parameters.xray-proxy-url}}"`}}
+          - 'http://{{.Values.xray_proxy_service}}:{{.Values.xray_proxy_port}}'
           - '-system-chrome'
           - '-headless'
           - '-headless-options'
-          # - 'proxy-server=http://10.233.62.230:{{.Values.xray_proxy_port}}'
-          - 'proxy-server={{`{{workflow.parameters.xray-proxy-url}}`}}'
+          - 'proxy-server=http://{{.Values.xray_proxy_service}}:{{.Values.xray_proxy_port}}'
+
         resources: # limit the resources
           limits:
             cpu: 1200m

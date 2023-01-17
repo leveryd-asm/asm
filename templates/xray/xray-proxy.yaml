@@ -19,8 +19,6 @@ spec:
           resources:
             limits:
               cpu: "3"
-            requests:
-              cpu: "0.5"
           volumeMounts:
             - mountPath: /tools/ca.crt
               subPath: ca.crt
@@ -65,7 +63,4 @@ spec:
     - protocol: TCP
       port: {{.Values.xray_proxy_port}}
       targetPort: 80
-      # 固定端口数值，必须是配置文件范围内
-      # 固定范围在kube-apiserver配置文件下参数  --service-node-port-range=30000-50000
-      nodePort: 30001
   type: NodePort

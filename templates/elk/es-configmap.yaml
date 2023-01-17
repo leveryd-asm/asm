@@ -23,11 +23,12 @@ data:
             request = urllib.request.Request(ES_URL)
             response = urllib.request.urlopen(request)
             if response.status != 200:
-                time.sleep(1)
+                time.sleep(2)
             else:
                 break
         except:
             pass
+        time.sleep(2)
 
     # set REPLICA_COUNT=0 for single node
     url = ES_URL + "/_template/" + TEMPLATE_NAME
@@ -132,6 +133,14 @@ data:
     url = ES_URL + "/_ingest/pipeline/" + PIPELINE_NAME
     request = urllib.request.Request(url, data=json.dumps(pipeline).encode(), method='PUT', headers=headers)
     response = urllib.request.urlopen(request)
+
+    # create proxify index
+    try:
+      url = ES_URL + "/proxify"
+      request = urllib.request.Request(url, data=b'', method='PUT', headers=headers)
+      response = urllib.request.urlopen(request)
+    except: # catch exception if index already exists
+      pass
 
     # apply the pipeline to proxify index
     url = ES_URL + "/proxify/_settings"
