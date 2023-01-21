@@ -2,11 +2,14 @@ dependencies:
 - name: kafka
   repository: https://charts.bitnami.com/bitnami
   version: 20.0.2
+- name: argo-workflows
+  repository: https://argoproj.github.io/argo-helm
+  version: 0.22.4
 - name: elasticsearch
   repository: https://helm.elastic.co
   version: 7.17.3
 - name: kibana
   repository: https://helm.elastic.co
   version: 7.17.3
-digest: sha256:d46ee30174c293d5dd8083acefa18d067120c37b2e75e859acd8b8cdf35ffcd1
-generated: "2023-01-18T15:27:31.241133+08:00"
+digest: sha256:2f44e15511fcccfc2769baeab4a60f17560c9d616d1d5891ef9507de064cb98a
+generated: "2023-01-19T14:24:52.26649+08:00"

@@ -50,6 +50,8 @@ spec:
             path: /tmp/result
       container:
         image: 'leveryd/x-tool:v2023.1.16'
+        command:
+          - "x"
         args:
           - 'subdomain'
           - '-esURL'

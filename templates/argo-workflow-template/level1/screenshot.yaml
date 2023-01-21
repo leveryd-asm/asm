@@ -35,6 +35,8 @@ spec:
             path: /tmp/
       container:
         image: 'leveryd/x-tool:v2023.1.16'
+        command:
+          - "x"
         args:
           - 'ss'
           - '-sssUrl'

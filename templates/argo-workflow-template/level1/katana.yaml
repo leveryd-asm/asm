@@ -91,6 +91,8 @@ spec:
             description: '待扫描的域名，比如 apple.com'
       container:
         image: projectdiscovery/katana:v0.0.3
+        command:
+          - "katana"
         args:
           - '-v'
           - '-u'
@@ -103,6 +105,8 @@ spec:
           - 'proxy-server=http://{{.Values.xray_proxy_service}}:{{.Values.xray_proxy_port}}'
 
         resources: # limit the resources
+          requests:
+            cpu: 10m
           limits:
             cpu: 1200m
 
@@ -113,6 +117,8 @@ spec:
             description: '待扫描的url，比如 https://apple.com'
       container:
         image: projectdiscovery/katana:v0.0.3
+        command:
+          - "katana"
         args:
           - '-v'
           - '-u'
@@ -125,6 +131,8 @@ spec:
           - 'proxy-server=http://{{.Values.xray_proxy_service}}:{{.Values.xray_proxy_port}}'
 
         resources: # limit the resources
+          requests:
+            cpu: 10m
           limits:
             cpu: 1200m
 
