@@ -1,8 +1,6 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  labels:
-    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
   name: level2-domain-nuclei
 spec:
   templates:
@@ -70,8 +68,3 @@ spec:
             templateRef:
               name: level1-save-alarm
               template: save-nuclei
-
-  podGC:
-    strategy: OnPodCompletion
-  ttlStrategy:
-    secondsAfterCompletion: 300

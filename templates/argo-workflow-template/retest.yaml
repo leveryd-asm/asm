@@ -1,8 +1,6 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  labels:
-    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
   name: retest
 spec:
   templates:
@@ -14,7 +12,3 @@ spec:
       script:
         image: leveryd/xray:v2022.11.22
         command: [ "/bin/bash", "-c", "/tools/xray webscan --plugin {{`{{inputs.parameters.plugin}}`}} --url {{`{{inputs.parameters.url}}`}}"]
-  ttlStrategy:
-    secondsAfterCompletion: 3000
-  podGC:
-    strategy: OnPodCompletion

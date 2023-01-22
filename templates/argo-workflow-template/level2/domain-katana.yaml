@@ -1,8 +1,6 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  labels:
-    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
   name: level2-domain-katana
 spec:
   arguments:
@@ -66,7 +64,3 @@ spec:
             templateRef:
               name: level1-crawler
               template: katana-binary
-  podGC:
-    strategy: OnPodCompletion
-  ttlStrategy:
-    secondsAfterCompletion: 300

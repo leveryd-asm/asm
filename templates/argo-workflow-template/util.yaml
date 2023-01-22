@@ -1,8 +1,6 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  labels:
-    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
   name: util
 spec:
   arguments: {}
@@ -35,8 +33,3 @@ spec:
 
     - name: generate-http-prefix
       data:
-
-  ttlStrategy:
-    secondsAfterCompletion: 3000
-  podGC:
-    strategy: OnPodCompletion

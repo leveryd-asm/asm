@@ -1,8 +1,6 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  labels:
-    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
   name: level3-nuclei
 spec:
   arguments: {}
@@ -71,10 +69,7 @@ spec:
               name: level2-domain-nuclei
               template: 获取子域名-nuclei扫描-保存结果
             withParam: {{`'{{inputs.parameters.domain-list}}'`}}
-  podGC:
-    strategy: OnPodCompletion
-  ttlStrategy:
-    secondsAfterCompletion: 300
+
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: CronWorkflow

@@ -35,6 +35,16 @@ metadata:
 ---
 apiVersion: v1
 data:
+  # https://argoproj.github.io/argo-workflows/default-workflow-specs/
+  workflowDefaults: |
+    metadata:
+      labels:
+        workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
+    spec:
+      podGC:
+        strategy: OnPodCompletion
+      ttlStrategy:
+        secondsAfterCompletion: 30
   workflowRestrictions: |
     templateReferencing: Strict
   artifactRepository: |

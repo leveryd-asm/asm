@@ -1,8 +1,6 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  labels:
-    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
   name: level1-identify-ms
 spec:
   arguments: {}
@@ -46,8 +44,3 @@ spec:
           - {{`'{{inputs.parameters.url}}'`}}
           - '-of'
           - '/tmp/result'
-
-  ttlStrategy:
-    secondsAfterCompletion: 3000
-  podGC:
-    strategy: OnPodCompletion

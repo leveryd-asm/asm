@@ -1,8 +1,6 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  labels:
-    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
   name: level1-screenshot
 spec:
   arguments: {}
@@ -47,8 +45,3 @@ spec:
           - '/tmp/'
           - '-ot'
           - 'dir'
-
-  ttlStrategy:
-    secondsAfterCompletion: 3000
-  podGC:
-    strategy: OnPodCompletion

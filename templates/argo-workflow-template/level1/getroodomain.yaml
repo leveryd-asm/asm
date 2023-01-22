@@ -1,8 +1,6 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  labels:
-    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
   name: level1-getrootdomain
 spec:
   templates:
@@ -34,8 +32,3 @@ spec:
           domains = json.loads(domains)
           ret = [domain['rootdomain'] for domain in domains['rows']]
           json.dump(ret, sys.stdout)
-
-  ttlStrategy:
-    secondsAfterCompletion: 3000
-  podGC:
-    strategy: OnPodCompletion

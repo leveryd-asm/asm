@@ -1,8 +1,6 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  labels:
-    workflows.argoproj.io/creator: system-serviceaccount-argo-argo-server
   name: level3-crawl-scan
 spec:
   templates:
@@ -58,8 +56,3 @@ spec:
               template: 获取子域名-katana爬虫二进制-xray扫描-保存结果
             withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}
             when: {{`'"{{inputs.parameters.crawler-way}}" == "katana-binary"'`}}
-
-  podGC:
-    strategy: OnPodCompletion
-  ttlStrategy:
-    secondsAfterCompletion: 300
