@@ -68,21 +68,27 @@ kubectl apply -f https://github.com/kubesphere/ks-installer/releases/download/v3
 
 * 安装本项目
 
-第一次安装，需要执行`helm dependency build`下载依赖。
+下载并切换到项目根目录
+```
+git clone https://github.com/leveryd-asm/asm --depth 1
+cd asm/
+```
+
+第一次安装时，需要执行`helm dependency update`下载依赖。
 
 执行如下命令会在asm命名空间中安装本项目
 ```
-helm -n asm template ./helm | kubectl apply -n asm -f -
+helm -n asm template ./ | kubectl apply -n asm -f -
 ```
 
 你也可以向helm传递参数来修改安装的配置，如下命令会使用`manage.com`作为域名访问控制台
 ```
-helm -n asm template ./helm --set console_domain=manage.com  | kubectl apply -n asm -f -
+helm -n asm template ./ --set console_domain=manage.com  | kubectl apply -n asm -f -
 ```
 
 * 卸载本项目
 ```
-helm -n asm template ./helm | kubectl delete -n asm -f -
+helm -n asm template ./ | kubectl delete -n asm -f -
 ```
 
 # 用户指南
