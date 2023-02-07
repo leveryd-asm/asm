@@ -9,18 +9,17 @@ spec:
       inputs:
         parameters:
           - name: domain
-            description: '域名，比如 apple.com'
+            description: '域名列表，比如 apple.com<换行>twitter.com'
           - name: id
             description: 'nuclei 规则id'
       container:
         image: projectdiscovery/nuclei:v2.8.3
+        command:
+          - sh
         args:
-          - '--target'
-          - {{`'{{inputs.parameters.domain}}'`}}
-          - '-id'
-          - {{`'{{inputs.parameters.id}}'`}}
-          - '-debug'
-          - '-duc'
+          - -c
+          - |
+            echo {{`'{{inputs.parameters.domain}}'`}} | nuclei -id {{`'{{inputs.parameters.id}}'`}} -debug -duc
         volumeMounts:
           - name: template-dir
             mountPath: /root/nuclei-templates
