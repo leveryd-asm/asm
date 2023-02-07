@@ -21,7 +21,7 @@ spec:
         args:
           - 'ims'
           - '-if'
-          - '/tmp/urls.txt '
+          - '/tmp/urls.txt'
           - '-of'
           - '/tmp/result'
 

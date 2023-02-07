@@ -14,6 +14,9 @@ spec:
         - name: chrome
           image: browserless/chrome:1.57-puppeteer-13.1.3
           imagePullPolicy: IfNotPresent
+          env:
+            - name: "CONNECTION_TIMEOUT"
+              value: "15000"
           resources:
             requests:
               cpu: "10m"
