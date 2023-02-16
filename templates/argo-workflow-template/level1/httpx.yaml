@@ -42,3 +42,19 @@ spec:
           - "-c"
           - "httpx -l /tmp/hosts -p {{`{{inputs.parameters.port-range}}`}} -fc 404,403,500 -ct -o /tmp/1 && grep -i html /tmp/1 | awk '{print $1}' > /tmp/result"
 
+    - name: probe-from-file-no-port
+      inputs:
+        artifacts:
+          - name: hosts
+            path: /tmp/hosts
+      outputs:
+        artifacts:
+          - name: urls
+            path: /tmp/result
+      container:
+        image: projectdiscovery/httpx:v1.2.4
+        command:
+          - 'sh'
+        args:
+          - "-c"
+          - "httpx -l /tmp/hosts -ec -o /tmp/result"

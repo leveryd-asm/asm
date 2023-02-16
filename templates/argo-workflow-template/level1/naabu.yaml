@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: level1-naabu
+spec:
+  templates:
+    - name: port-scan
+      retryStrategy:      # because '-ec' options maybe fail
+        limit: "3"
+        retryPolicy: "Always"
+      inputs:
+        artifacts:
+          - name: hosts
+            path: /tmp/hosts
+        parameters:
+          - name: port-range
+            value: "8000-9000"
+      outputs:
+        artifacts:
+          - name: result   # every line in the result file will be like "host:port"
+            path: /tmp/result
+      container:
+        image: projectdiscovery/naabu:v2.1.1
+        command:
+          - 'sh'
+        args:
+          - "-c"
+          - "naabu -l /tmp/hosts -r 114.114.114.114,8.8.8.8 -ec -stats -p {{`{{inputs.parameters.port-range}}`}} -o /tmp/result"

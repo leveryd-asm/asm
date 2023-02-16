@@ -18,7 +18,7 @@ spec:
             default: "false"
             enum: [ "true", "false" ]
 
-      parallelism: 3 # 并发数
+      parallelism: 12 # 并发数
       steps:
         - - name: call-getrootdomain-from-console-api
             arguments:
@@ -54,7 +54,7 @@ spec:
           - name: save-subdomain-result
             default: "false"
             enum: [ "true", "false" ]
-      parallelism: 3
+      parallelism: 12
       steps:
         - - name: call-subdomain-nuclei-save
             arguments:
@@ -69,6 +69,49 @@ spec:
               name: level2-domain-nuclei
               template: 获取子域名-nuclei扫描-保存结果
             withParam: {{`'{{inputs.parameters.domain-list}}'`}}
+
+    - name: 从API获取兄弟域名-获取子域名-web服务扫描-nuclei扫描-保存结果
+      inputs:
+        parameters:
+          - name: query
+            value: 'limit=10000&offset=0&accurate=是'
+            description: "console api查询子域名时的条件"
+          - name: get-subdomain-way
+            description: "哪种方式扫描子域名 subfinder,oneforall,es,mysql"
+            default: "subfinder,es,mysql"
+          - name: save-subdomain-result
+            default: "false"
+            enum: [ "true", "false" ]
+          - name: port-range
+            description: "是否保存子域名结果"
+            default: "8000-9000"
+
+      parallelism: 6 # 并发数
+      steps:
+        - - name: call-getrootdomain-from-console-api
+            arguments:
+              parameters:
+                - name: query
+                  value: {{`'{{inputs.parameters.query}}'`}}
+            templateRef:
+              name: level1-getrootdomain
+              template: from-console-api
+        - - name: call-subdomain-nuclei-save
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{item}}'`}}
+                - name: get-subdomain-way
+                  value: {{`'{{inputs.parameters.get-subdomain-way}}'`}}
+                - name: save-subdomain-result
+                  value: {{`'{{inputs.parameters.save-subdomain-result}}'`}}
+                - name: port-range
+                  value: {{`'{{inputs.parameters.port-range}}'`}}
+            templateRef:
+              name: level2-domain-nuclei
+              template: 获取子域名-web服务扫描-nuclei扫描-保存结果
+            withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}
+
 
 ---
 apiVersion: argoproj.io/v1alpha1
