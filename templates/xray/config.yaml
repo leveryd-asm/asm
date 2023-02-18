@@ -109,12 +109,12 @@ data:
         detect_outdated_ssl_version: false  # 检查 ssl 版本问题
         detect_http_header_config: false    # 检查 http 安全相关 header 是否配置
         detect_cookie_httponly: false       # 检查 set-cookie 时是否设置 http only
-        detect_china_id_card_number: false  # 检查响应是否存在身份证号
-        detect_china_phone_number: false    # 检查响应是否存在电话号码
-        detect_china_bank_card: false       # 检查响应是否存在银行卡号
+        detect_china_id_card_number: true  # 检查响应是否存在身份证号
+        detect_china_phone_number: true    # 检查响应是否存在电话号码
+        detect_china_bank_card: true       # 检查响应是否存在银行卡号
         detect_private_ip: false            # 检查响应是否包含内网 ip
       brute-force:
-        enabled: true
+        enabled: false
         username_dictionary: ""             # 自定义用户名字典, 为空将使用内置 TOP10, 配置后将与内置字典**合并**
         password_dictionary: ""             # 自定义密码字典，为空将使用内置 TOP100, 配置后将与内置字典**合并**
       cmd-injection:
@@ -122,7 +122,7 @@ data:
       crlf-injection:
         enabled: true
       dirscan:
-        enabled: true
+        enabled: false
         depth: 1                            # 检测深度，定义 http://t.com/a/ 深度为 1, http://t.com/a 深度为 0
         dictionary: ""                      # 自定义检测字典, 配置后将与内置字典**合并**
         exclude_dir: []                     # 想要排除的内部的扫描category，例如["sensitive/crossdomain","system/key"]
@@ -177,26 +177,25 @@ data:
     # 反连平台配置，更多解释见 https://docs.xray.cool/#/configration/reverse
     # 注意: 默认配置为禁用反连平台，这是无法扫描出依赖反连平台的漏洞，这些漏洞包括 fastjson，ssrf 以及 poc 中依赖反连的情况等
     reverse:
-      db_file_path: ""                      # 反连平台数据库文件位置, 这是一个 KV 数据库
-      token: ""                             # 反连平台认证的 Token, 独立部署时不能为空
+      token: "not_secure_token"                             # 反连平台认证的 Token, 独立部署时不能为空
       http:
-        enabled: false
-        listen_ip: 0.0.0.0
-        listen_port: ""
+        enabled: {{.Values.reverse_http_enable}}
+        listen_ip: {{.Values.reverse_listen_ip}}
+        listen_port: 80
         ip_header: ""                       # 在哪个 http header 中取 ip，为空代表从 REMOTE_ADDR 中取
       dns:
-        enabled: false
-        listen_ip: 0.0.0.0
-        domain: ""                          # DNS 域名配置
-        is_domain_name_server: false        # 是否修改了域名的 ns 为反连平台，如果是，那 nslookup 等就不需要指定 dns 了
+        enabled: {{.Values.reverse_dns_enable}}
+        listen_ip: {{.Values.reverse_listen_ip}}
+        domain: {{.Values.reverse_dns_domain}}                          # DNS 域名配置
+        is_domain_name_server: true        # 是否修改了域名的 ns 为反连平台，如果是，那 nslookup 等就不需要指定 dns 了
         resolve:                            # DNS 静态解析规则
           - type: A                           # A, AAAA, TXT 三种
             record: localhost
             value: 127.0.0.1
             ttl: 60
       client:
-        remote_server: false                # 是否是独立的远程 server，如果是要在下面配置好远程的服务端地址
-        http_base_url: ""                   # 默认将根据 ListenIP 和 ListenPort 生成，该地址是存在漏洞的目标反连回来的地址, 当反连平台前面有反代、绑定域名、端口映射时需要自行配置
+        remote_server: {{.Values.reverse_client_enable}}                # 是否是独立的远程 server，如果是要在下面配置好远程的服务端地址
+        http_base_url: {{.Values.reverse_http_base_url}}                   # 默认将根据 ListenIP 和 ListenPort 生成，该地址是存在漏洞的目标反连回来的地址, 当反连平台前面有反代、绑定域名、端口映射时需要自行配置
         dns_server_ip: ""                   # 和 http_base_url 类似，实际用来访问 dns 服务器的地址
 
     # 被动代理配置
@@ -339,3 +338,32 @@ data:
         ask:
           enabled: true
           page_limit: 12
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: xray-reverse-config
+data:
+  config.yaml: |-
+    version: 4.0
+
+    # 反连平台配置，更多解释见 https://docs.xray.cool/#/configration/reverse
+    # 注意: 默认配置为禁用反连平台，这是无法扫描出依赖反连平台的漏洞，这些漏洞包括 fastjson，ssrf 以及 poc 中依赖反连的情况等
+    reverse:
+      db_file_path: "/tmp/reverse.db"                      # 反连平台数据库文件位置, 这是一个 KV 数据库
+      token: "not_secure_token"                             # 反连平台认证的 Token, 独立部署时不能为空
+      http:
+        enabled: {{.Values.reverse_http_enable}}
+        listen_ip: {{.Values.reverse_listen_ip}}
+        listen_port: 80
+        ip_header: ""                       # 在哪个 http header 中取 ip，为空代表从 REMOTE_ADDR 中取
+      dns:
+        enabled: {{.Values.reverse_dns_enable}}
+        listen_ip: {{.Values.reverse_listen_ip}}
+        domain: {{.Values.reverse_dns_domain}}                          # DNS 域名配置
+        is_domain_name_server: true        # 是否修改了域名的 ns 为反连平台，如果是，那 nslookup 等就不需要指定 dns 了
+        resolve:                            # DNS 静态解析规则
+          - type: A                           # A, AAAA, TXT 三种
+            record: localhost
+            value: 127.0.0.1
+            ttl: 60

@@ -1,0 +1,44 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xray-reverse
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: xray-reverse
+    spec:
+      hostNetwork: true
+      containers:
+        - name: reverse
+          image: leveryd/xray:v2022.11.22
+          ports:
+            - containerPort: 80
+          command: ["/bin/bash", "-c", "/tools/xray reverse"]
+          resources:
+            requests:
+              cpu: "10m"
+            limits:
+              cpu: "1"
+          volumeMounts:
+            - name: config
+              mountPath: /tools/config.yaml
+              subPath: config.yaml
+            - name: db
+              mountPath: /db
+      volumes:
+        - name: config
+          configMap:
+            name: xray-reverse-config
+            items:
+              - key: config.yaml
+                path: config.yaml
+        - name: db
+          persistentVolumeClaim:
+            claimName: xray-reverse-db
+  selector:
+    matchLabels:
+      app: xray-reverse
+

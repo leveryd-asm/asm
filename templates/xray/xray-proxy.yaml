@@ -15,7 +15,7 @@ spec:
           image: leveryd/xray:v2022.11.22
           ports:
             - containerPort: 80
-          command: ["/bin/bash", "-c", "/tools/xray webscan --plugins cmd-injection,jsonp,path-traversal,sqldet,xss,xxe,fastjson,shiro,thinkphp --listen 0.0.0.0:80 --webhook-output http://{{.Values.xray_webhook_service}}:{{.Values.xray_webhook_port}}/webhook"]
+          command: ["/bin/bash", "-c", "/tools/xray webscan --listen 0.0.0.0:80 --webhook-output http://{{.Values.xray_webhook_service}}:{{.Values.xray_webhook_port}}/webhook"]
           resources:
             requests:
               cpu: "10m"

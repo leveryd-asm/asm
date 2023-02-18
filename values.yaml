@@ -33,6 +33,15 @@ xray_proxy_port: 58088
 xray_webhook_service: xray-webhook-service
 xray_webhook_port: 58089
 
+# xray reverse
+reverse_http_enable: false
+reverse_dns_enable: false
+reverse_client_enable: false
+
+reverse_http_base_url: ""    # eg "leveryd.xxx.com"
+reverse_listen_ip: "192.168.0.110"
+reverse_dns_domain: ""   # eg "xxx.com"
+
 # sensitive info
 weixin_webhook_url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=07d4613c-45ef-46e2-9379-a7b2aade3132
 
@@ -67,10 +76,10 @@ console_domain: console.com   # ingress domain
 
 # nuclei
 # visit https://app.interactsh.com/ to get your unique domain
-interactsh_server: "cevxtvb2vtc0000fwy30g8p67payyyyyb.oast.fun"
+interactsh_server: "oast.fun"
 
 # security
-user_can_deploy_workflowtemplate: true  # if u set false, it will be more security, because user can only run certain task
+user_can_deploy_workflowtemplate: true  # if u set false, it will be more secure, because user can only run certain task
 
 # elasticsearch
 elasticsearch:
@@ -101,7 +110,7 @@ elasticsearch:
 kibana:
   elasticsearchHosts: "http://elasticsearch-master:9200"
   kibanaConfig:
-     kibana.yml: |
+    kibana.yml: |
       server.base="/kibana"
       server.rewriteBasePath=true
 # healthCheckPath: "/kibana"
