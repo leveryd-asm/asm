@@ -32,3 +32,33 @@ spec:
           domains = json.loads(domains)
           ret = [domain['rootdomain'] for domain in domains['rows']]
           json.dump(ret, sys.stdout)
+
+    - name: from-db
+      inputs:
+        parameters:
+          - name: sql
+            value: "select rootdomain from brotherdomain where corpname in (select corpname from corp where corelevel='1级') and accurate='是';"
+            description: "sql语句, 注意: 最好使用单引号, 双引号需要自己转义"
+      container:
+        image: mysql:5.7
+        command:
+          - 'sh'
+        args:
+          - "-c"
+          - |
+            echo "export lang=UTF8" > sql.sh
+            echo "mysql -s -h mysql-service -u root --password={{.Values.console_db_root_password}} -e \"use cute;set character_set_client=utf8;set character_set_connection=utf8;set character_set_results=utf8;set character_set_server=utf8;{{`{{inputs.parameters.sql}}`}}\" > /tmp/result 2>/dev/null" >> sql.sh
+
+            echo "sed -i '1d' /tmp/result" >> sql.sh
+            #echo "printf \"'\"" >> sql.sh
+            echo "printf '['" >> sql.sh
+            echo "result=\`cat /tmp/result\`" >> sql.sh
+            echo "for i in \${result[@]}" >> sql.sh
+            echo "do" >> sql.sh
+            echo  "printf '\"'\$i'\",'" >> sql.sh
+            echo "done" >> sql.sh
+            echo "printf '\"\"'" >> sql.sh
+            #echo "echo \"\"" >> sql.sh
+            echo "printf ']'" >> sql.sh
+            echo "echo \"\"" >> sql.sh
+            bash sql.sh

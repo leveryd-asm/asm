@@ -56,3 +56,56 @@ spec:
               template: 获取子域名-katana爬虫二进制-xray扫描-保存结果
             withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}
             when: {{`'"{{inputs.parameters.crawler-way}}" == "katana-binary"'`}}
+
+    - name: 获取扫描优先级高的兄弟域名-获取子域名-katana爬虫-xray扫描-保存结果
+      inputs:
+        parameters:
+          - name: sql
+            value: "select rootdomain from brotherdomain where corpname in (select corpname from corp where corelevel='1级') and accurate='是';"
+            description: "db查询条件"
+          - name: crawler-way
+            default: "katana-binary"
+            enum: ["katana-binary", "katana-api"]
+            description: "采用哪种爬虫方式"
+          - name: get-subdomain-way
+            description: "哪种方式扫描子域名 subfinder,oneforall,es,mysql"
+            default: "subfinder,es,mysql"
+          - name: save-subdomain-result
+            default: "false"
+            enum: ["true", "false"]
+
+      parallelism: 3   # todo:config
+      steps:
+        - - name: call-getrootdomain-from-db
+            arguments:
+              parameters:
+                - name: sql
+                  value: {{`"{{inputs.parameters.sql}}"`}}
+            templateRef:
+              name: level1-getrootdomain
+              template: from-db
+        - - name: call-katana-scanner-save
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{item}}'`}}
+            templateRef:
+              name: level2-domain-katana
+              template: 获取子域名-katana爬虫-xray扫描-保存结果
+            withParam: {{`'{{steps.call-getrootdomain-from-db.outputs.result}}'`}}
+            when: {{`'"{{inputs.parameters.crawler-way}}" == "katana-service"'`}}
+        - - name: call-katana-binary-scanner-save
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{item}}'`}}
+                - name: get-subdomain-way
+                  value: {{`"{{inputs.parameters.get-subdomain-way}}"`}}
+                - name: save-subdomain-result
+                  value: {{`"{{inputs.parameters.save-subdomain-result}}"`}}
+
+            templateRef:
+              name: level2-domain-katana
+              template: 获取子域名-katana爬虫二进制-xray扫描-保存结果
+            withParam: {{`'{{steps.call-getrootdomain-from-db.outputs.result}}'`}}
+            when: {{`'"{{inputs.parameters.crawler-way}}" == "katana-binary"'`}}
