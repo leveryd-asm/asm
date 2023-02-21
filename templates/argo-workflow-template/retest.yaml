@@ -10,5 +10,5 @@ spec:
           - name: url
           - name: plugin
       script:
-        image: leveryd/xray:v2022.11.22
+        image: leveryd/xray:v2023.2.21
         command: [ "/bin/bash", "-c", "/tools/xray webscan --plugin {{`{{inputs.parameters.plugin}}`}} --url {{`{{inputs.parameters.url}}`}}"]

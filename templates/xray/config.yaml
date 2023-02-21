@@ -103,7 +103,7 @@ data:
       baseline:
         enabled: true
         detect_cors_header_config: true     # 检查 cors 相关配置
-        detect_server_error_page: true      # 检查服务器错误信息
+        detect_server_error_page: false      # 检查服务器错误信息
         detect_phpinfo: true                # 检查响应是否包含phpinfo
         detect_system_path_leak: false      # 检查响应是否包含系统路径泄露
         detect_outdated_ssl_version: false  # 检查 ssl 版本问题

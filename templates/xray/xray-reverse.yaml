@@ -13,7 +13,7 @@ spec:
       hostNetwork: true
       containers:
         - name: reverse
-          image: leveryd/xray:v2022.11.22
+          image: leveryd/xray:v2023.2.21
           ports:
             - containerPort: 80
           command: ["/bin/bash", "-c", "/tools/xray reverse"]
