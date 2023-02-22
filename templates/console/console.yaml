@@ -11,25 +11,6 @@ spec:
         app: console
     spec:
       containers:
-        - name: mysql
-          image: mysql:5.7
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 3306
-          env:
-            - name: MYSQL_ROOT_PASSWORD
-              value: {{.Values.console_db_root_password}}
-          volumeMounts:
-            - mountPath: /etc/localtime
-              name: localtime
-            {{- if .Values.console_db_persistence_enabled }}
-            - mountPath: /var/lib/mysql
-              name: data
-            - mountPath: /tmp/tempdir
-              name: tmpdir
-            {{- end }}
-            - name: mysql-initdb
-              mountPath: /docker-entrypoint-initdb.d
         - name: console-api
           image: leveryd/console-api:2022.12.9
           args:
@@ -53,38 +34,12 @@ spec:
           ports:
             - containerPort: 80
       volumes:
-        - name: localtime
-          hostPath:
-            path: /etc/localtime
-        {{- if .Values.console_db_persistence_enabled }}
-        - name: data
-          hostPath:
-            path: {{.Values.console_db_persistence_data_dir}}
-        - name: tmpdir
-          hostPath:
-            path: /tmp
-        {{- end }}
-        - name: mysql-initdb
-          configMap:
-            name: mysql-initdb-config
         - name: console-api-conf
           configMap:
             name: console-api-conf
   selector:
     matchLabels:
       app: console
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mysql-service
-spec:
-  selector:
-    app: console
-  ports:
-    - protocol: TCP
-      port: 3306
-      targetPort: 3306
 ---
 apiVersion: v1
 kind: Service

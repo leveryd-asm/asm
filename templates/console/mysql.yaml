@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:5.7
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: {{.Values.console_db_root_password}}
+          volumeMounts:
+            - mountPath: /etc/localtime
+              name: localtime
+            {{- if .Values.console_db_persistence_enabled }}
+            - mountPath: /var/lib/mysql
+              name: data
+            - mountPath: /tmp/tempdir
+              name: tmpdir
+            {{- else }}
+            - mountPath: /var/lib/mysql
+              name: data
+            {{- end }}
+            - name: mysql-initdb
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+        {{- if .Values.console_db_persistence_enabled }}
+        - name: data
+          hostPath:
+            path: {{.Values.console_db_persistence_data_dir}}
+        - name: tmpdir
+          hostPath:
+            path: /tmp
+        {{- else }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: db-data
+        {{- end }}
+        - name: mysql-initdb
+          configMap:
+            name: mysql-initdb-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+spec:
+  selector:
+    app: db
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
