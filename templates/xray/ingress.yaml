@@ -1,16 +1,16 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: kibana
+  name: proxy
 spec:
   rules:
-    - host: kibana.{{.Values.console_domain}}
+    - host: proxy.{{.Values.console_domain}}
       http:
         paths:
           - path: / # match all paths that begin with /argo/
             pathType: ImplementationSpecific
             backend:
               service:
-                name: release-name-kibana   # name of the service
+                name: {{.Values.xray_proxy_service}}   # name of the service
                 port:
-                  number: 5601
+                  number: {{.Values.xray_proxy_port}}
