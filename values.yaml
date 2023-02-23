@@ -29,6 +29,7 @@ crawler_group_id: crawler
 # xray
 xray_proxy_service: xray-proxy-service  # https/http proxy (attention: it should be better not to modify this name)
 xray_proxy_port: 58088
+xray_proxy_nodeport: 30088  # nodeport for xray_proxy_service, should be in range 30000-32767 on default k8s cluster
 
 xray_webhook_service: xray-webhook-service
 xray_webhook_port: 58089
@@ -106,11 +107,13 @@ elasticsearch:
         - name: init-script
           mountPath: /tmp/init.py
           subPath: init.py
+  rbac:
+    create: true
 
 kibana:
   elasticsearchHosts: "http://elasticsearch-master:9200"
   kibanaConfig:
-    kibana.yml: |
-      server.base="/kibana"
+     kibana.yml: |
+      server.basePath="/kibana"
+      server.host="0.0.0.0"
       server.rewriteBasePath=true
-# healthCheckPath: "/kibana"

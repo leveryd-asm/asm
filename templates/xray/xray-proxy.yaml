@@ -65,4 +65,5 @@ spec:
     - protocol: TCP
       port: {{.Values.xray_proxy_port}}
       targetPort: 80
+      nodePort: {{.Values.xray_proxy_nodeport}}
   type: NodePort
