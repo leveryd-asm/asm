@@ -58,3 +58,20 @@ spec:
         args:
           - "-c"
           - "httpx -l /tmp/hosts -ec -o /tmp/result"
+
+    - name: probe-all-from-file-no-port
+      inputs:
+        artifacts:
+          - name: hosts
+            path: /tmp/hosts
+      outputs:
+        artifacts:
+          - name: urls
+            path: /tmp/result
+      container:
+        image: projectdiscovery/httpx:v1.2.4
+        command:
+          - 'sh'
+        args:
+          - "-c"
+          - "httpx -fc 0 -l /tmp/hosts -sc -cl -ct -location -lc -wc -rt -title -server -td -ip -cname -asn -cdn -probe -csv -ec -o /tmp/result"

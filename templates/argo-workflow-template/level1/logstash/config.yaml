@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash
+data:
+  httpx.conf: |
+    input {
+        stdin {
+            codec => "plain"
+        }
+    }
+    filter {
+      csv {
+        columns =>  ["timestamp", "asn", "csp", "tls-grab", "hashes", "regex", "cdn-name", "port", "url", "input", "location", "title", "scheme", "error", "webserver", "response-body", "content-type", "method", "host", "path", "favicon-mmh3", "final-url", "response-header", "request", "response-time", "jarm", "chain-status-codes", "a", "cnames", "technologies", "extracts", "chain", "words", "lines", "status-code", "content-length", "failed", "vhost", "websocket", "cdn", "http2", "pipeline"]
+      }
+    }
+    output {
+      elasticsearch {
+        hosts => ["elasticsearch-master:9200"]
+        index => "web-service-index"
+      }
+    }

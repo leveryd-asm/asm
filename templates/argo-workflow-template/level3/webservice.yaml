@@ -1,0 +1,52 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: level3-probe-web-service
+spec:
+  arguments: {}
+  volumes:
+    - name: logstash-config-map
+      configMap:
+        name: logstash
+  templates:
+    - name: 从API获取兄弟域名-获取子域名-web服务扫描-保存结果
+      inputs:
+        parameters:
+          - name: query
+            value: 'limit=10000&offset=0&accurate=是'
+            description: "console api查询子域名时的条件"
+          - name: get-subdomain-way
+            description: "哪种方式扫描子域名 subfinder,oneforall,es,mysql"
+            default: "subfinder,es,mysql"
+          - name: save-subdomain-result
+            default: "false"
+            enum: [ "true", "false" ]
+          - name: port-range
+            description: "是否保存子域名结果"
+            default: "80,443,8000-9000"
+
+      parallelism: 4 # 并发数
+      steps:
+        - - name: call-getrootdomain-from-console-api
+            arguments:
+              parameters:
+                - name: query
+                  value: {{`'{{inputs.parameters.query}}'`}}
+            templateRef:
+              name: level1-getrootdomain
+              template: from-console-api
+        - - name: call-subdomain-portscan-save
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{item}}'`}}
+                - name: get-subdomain-way
+                  value: {{`'{{inputs.parameters.get-subdomain-way}}'`}}
+                - name: save-subdomain-result
+                  value: {{`'{{inputs.parameters.save-subdomain-result}}'`}}
+                - name: port-range
+                  value: {{`'{{inputs.parameters.port-range}}'`}}
+            templateRef:
+              name: level2-probe-web-service
+              template: 获取子域名-端口扫描-存储结果
+            withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}

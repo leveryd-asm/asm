@@ -1,0 +1,108 @@
+# probe web service status for a domain
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: level2-probe-web-service
+spec:
+  volumes:
+    - name: logstash-config-map
+      configMap:
+        name: logstash
+  templates:
+    - name: port-scan
+      retryStrategy:      # because '-ec' options maybe fail
+        limit: "2"
+        retryPolicy: "Always"
+      inputs:
+        parameters:
+          - name: hosts
+            description: "domains or ips, eg www.apple.com<br>www.google.com<br>www.microsoft.com"
+          - name: port-range
+            value: "8000-9000"
+      steps:
+        - - name: call-port-scan
+            arguments:
+              artifacts:
+                - name: hosts
+                  raw:
+                    data: {{`'{{inputs.parameters.hosts}}'`}}
+              parameters:
+                - name: port-range
+                  value: {{`'{{inputs.parameters.port-range}}'`}}
+            templateRef:
+              name: level1-naabu
+              template: port-scan
+        - - name: call-httpx-scan
+            arguments:
+              artifacts:
+                - name: hosts
+                  from: {{`'{{steps.call-port-scan.outputs.artifacts.result}}'`}}
+            templateRef:
+              name: level1-httpx
+              template: probe-all-from-file-no-port
+        - - name: logstash
+            arguments:
+              artifacts:
+                - name: httpx-result
+                  from: {{`'{{steps.call-httpx-scan.outputs.artifacts.urls}}'`}}
+            templateRef:
+              name: level1-logstash
+              template: httpx2elasticsearch
+
+    - name: 获取子域名-端口扫描-存储结果
+      retryStrategy:      # because '-ec' options maybe fail
+        limit: "2"
+        retryPolicy: "Always"
+      inputs:
+        parameters:
+          - name: domain
+            description: "root domain, eg apple.com"
+          - name: get-subdomain-way
+            description: "哪种方式扫描子域名 subfinder,oneforall,es,mysql"
+            default: "subfinder,es,mysql"
+          - name: save-subdomain-result
+            description: "是否保存子域名结果"
+            default: "false"
+            enum: [ "true", "false" ]
+          - name: port-range
+            value: "80,443,8000-9000"
+      steps:
+        - - name: call-get-subdomains-save
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{inputs.parameters.domain}}'`}}
+                - name: get-subdomain-way
+                  value: {{`'{{inputs.parameters.get-subdomain-way}}'`}}
+                - name: save-subdomain-result
+                  value: {{`'{{inputs.parameters.save-subdomain-result}}'`}}
+            templateRef:
+              name: level2-save-subdomains
+              template: get-subdomains-save
+        - - name: call-port-scan
+            arguments:
+              artifacts:
+                - name: hosts
+                  from: {{`'{{workflow.outputs.artifacts.subdomains}}'`}}
+              parameters:
+                - name: port-range
+                  value: {{`'{{inputs.parameters.port-range}}'`}}
+            templateRef:
+              name: level1-naabu
+              template: port-scan
+        - - name: call-httpx-scan
+            arguments:
+              artifacts:
+                - name: hosts
+                  from: {{`'{{steps.call-port-scan.outputs.artifacts.result}}'`}}
+            templateRef:
+              name: level1-httpx
+              template: probe-all-from-file-no-port
+        - - name: logstash
+            arguments:
+              artifacts:
+                - name: httpx-result
+                  from: {{`'{{steps.call-httpx-scan.outputs.artifacts.urls}}'`}}
+            templateRef:
+              name: level1-logstash
+              template: httpx2elasticsearch
