@@ -109,3 +109,30 @@ spec:
               template: 获取子域名-katana爬虫二进制-xray扫描-保存结果
             withParam: {{`'{{steps.call-getrootdomain-from-db.outputs.result}}'`}}
             when: {{`'"{{inputs.parameters.crawler-way}}" == "katana-binary"'`}}
+
+    - name: 从API获取兄弟域名-从ES获取web服务-katana爬虫-xray扫描-保存结果
+      inputs:
+        parameters:
+          - name: query
+            value: 'limit=10000&offset=0&accurate=是'
+            description: "console api查询子域名时的条件"
+
+      parallelism: 3
+      steps:
+        - - name: call-getrootdomain-from-console-api
+            arguments:
+              parameters:
+                - name: query
+                  value: {{`"{{inputs.parameters.query}}"`}}
+            templateRef:
+              name: level1-getrootdomain
+              template: from-console-api
+        - - name: call-katana-scanner-save
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{item}}'`}}
+            templateRef:
+              name: level2-domain-katana
+              template: 获取web服务-katana爬虫-xray扫描-保存结果
+            withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}

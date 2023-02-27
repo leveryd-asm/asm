@@ -131,3 +131,34 @@ spec:
             templateRef:
               name: level1-save-alarm
               template: save-nuclei
+
+    - name: 获取web服务-nuclei扫描-保存结果
+      inputs:
+        parameters:
+          - name: domain
+            description: "eg : www.baidu.com or baidu.com"
+      steps:
+        - - name: call-get-urls-from-es
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{inputs.parameters.domain}}'`}}
+            templateRef:
+              name: asset-level1-web-service
+              template: get-urls-from-es
+        - - name: call-nuclei-scan
+            arguments:
+              artifacts:
+                - name: hosts
+                  from: {{`'{{steps.call-get-urls-from-es.outputs.artifacts.result}}'`}}
+            templateRef:
+              name: level1-nuclei
+              template: nuclei-scan
+        - - name: call-save-nuclei-alarm
+            arguments:
+              artifacts:
+                - from: {{`'{{steps.call-nuclei-scan.outputs.artifacts.nuclei-result}}'`}}
+                  name: result
+            templateRef:
+              name: level1-save-alarm
+              template: save-nuclei
