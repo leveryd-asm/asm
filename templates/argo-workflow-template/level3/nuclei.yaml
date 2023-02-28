@@ -138,27 +138,3 @@ spec:
               name: level2-domain-nuclei
               template: 获取web服务-nuclei扫描-保存结果
             withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}
-
----
-apiVersion: argoproj.io/v1alpha1
-kind: CronWorkflow
-metadata:
-  name: everyd-two-hours
-spec:
-  # run everyd two hour
-  schedule: "0 */2 * * *"
-  suspend: true
-  workflowSpec:
-    workflowTemplateRef:
-      name: level3-nuclei
-    arguments:
-      parameters:
-        - name: domain-list
-          value: '["xxx.com", "yyy.com"]'
-        - name: get-subdomain-way
-          description: "哪种方式扫描子域名 subfinder,oneforall,es,mysql"
-          default: "subfinder,es,mysql"
-        - name: save-subdomain-result
-          default: "false"
-          enum: [ "true", "false" ]
-    entrypoint: 输入域名列表-获取子域名-nuclei扫描-保存结果

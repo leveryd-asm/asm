@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: cron-get-subdomain
+spec:
+  # run everyd two days
+  schedule: "0 0 */2 * *"
+  suspend: false
+  workflowSpec:
+    workflowTemplateRef:
+      name: level3-subdomain
+    arguments:
+      parameters:
+        - name: query
+          value: 'limit=10000&offset=0&accurate=是'
+        - name: get-subdomain-way
+          value: "subfinder,es"
+    entrypoint: 从API获取兄弟域名-获取子域名-保存结果
