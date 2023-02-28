@@ -7,8 +7,8 @@ spec:
     - name: get-urls-from-es
       inputs:
         parameters:
-          - name: domain
-            description: rootomain or subdomain to search for, e.g. example.com or www.example.com
+          - name: root domain
+            description: rootdomain to search for, e.g. example.com
       outputs:
         artifacts:
           - name: result
@@ -18,4 +18,4 @@ spec:
         command:
           - 'sh'
         source: |
-          x es -esURL http://elasticsearch-master:9200 -index web-service-index -num 10000 -q 'url:"{{`{{inputs.parameters.domain}}`}}"' -source url -of /tmp/result
+          x es -esURL http://elasticsearch-master:9200 -index web-service-index -num 10000 -q 'parsed-domain.registered_domain:"{{`{{inputs.parameters.domain}}`}}"' -source url -of /tmp/result

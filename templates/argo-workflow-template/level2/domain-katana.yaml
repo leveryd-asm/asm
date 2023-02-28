@@ -65,7 +65,7 @@ spec:
       inputs:
         parameters:
           - name: domain
-            description: "eg : www.baidu.com or baidu.com"
+            description: "eg : example.com"
       steps:
         - - name: call-get-urls-from-es
             arguments:

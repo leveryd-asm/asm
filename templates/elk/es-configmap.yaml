@@ -152,5 +152,40 @@ data:
     request = urllib.request.Request(url, data=json.dumps(data).encode(), method='PUT', headers=headers)
     response = urllib.request.urlopen(request)
 
+    # create parse-domain pipeline
+    # GET _ingest/pipeline to get json code, replace 'true' to 'True'
+    pipeline = {
+        "processors" : [
+          {
+            "registered_domain" : {
+              "field" : "domain",
+              "target_field" : "parsed-domain",
+              "ignore_failure" : True
+            }
+          }
+        ]
+    }
+    url = ES_URL + "/_ingest/pipeline/parse-domain"
+    request = urllib.request.Request(url, data=json.dumps(pipeline).encode(), method='PUT', headers=headers)
+    response = urllib.request.urlopen(request)
+
+    # create web-service index
+    try:
+      url = ES_URL + "/web-service"
+      request = urllib.request.Request(url, data=b'', method='PUT', headers=headers)
+      response = urllib.request.urlopen(request)
+    except: # catch exception if index already exists
+      pass
+
+    # apply the pipeline to proxify index
+    url = ES_URL + "/web-service/_settings"
+    data = {
+      "index": {
+        "default_pipeline": "parse-domain"
+      }
+    }
+    request = urllib.request.Request(url, data=json.dumps(data).encode(), method='PUT', headers=headers)
+    response = urllib.request.urlopen(request)
+
     while True:
       time.sleep(10000)

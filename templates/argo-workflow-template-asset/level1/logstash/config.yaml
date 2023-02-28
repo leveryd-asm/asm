@@ -20,6 +20,15 @@ data:
         convert => ["status-code","integer"]
         convert => ["content-length","integer"]
       }
+      mutate {
+        split => { "input" => ":" }
+        add_field => { "domain" => "%{[input][0]}" }
+      }
+      mutate {
+        # it is needed and can not be in last mutate block.
+        # Each mutation must be in its own code block if the sequence of operations needs to be preserved.
+        join => { "input" => ":" }
+      }
     }
     output {
       elasticsearch {
