@@ -116,7 +116,10 @@ spec:
           - name: query
             value: 'limit=10000&offset=0&accurate=是'
             description: "console api查询子域名时的条件"
-
+          - name: min_port
+            description: min port to search for, e.g. 8000
+          - name: max_port
+            description: max port to search for, e.g. 9000
       parallelism: 3
       steps:
         - - name: call-getrootdomain-from-console-api
@@ -132,6 +135,10 @@ spec:
               parameters:
                 - name: domain
                   value: {{`'{{item}}'`}}
+                - name: min_port
+                  value: {{`"{{inputs.parameters.min_port}}"`}}
+                - name: max_port
+                  value: {{`"{{inputs.parameters.max_port}}"`}}
             templateRef:
               name: level2-domain-katana
               template: 获取web服务-katana爬虫-xray扫描-保存结果

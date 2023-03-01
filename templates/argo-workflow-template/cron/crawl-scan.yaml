@@ -14,4 +14,8 @@ spec:
       parameters:
         - name: query
           value: 'limit=10000&offset=0&accurate=是'
+        - name: min_port
+          value: '8000'
+        - name: max_port
+          value: '9000'
     entrypoint: 从API获取兄弟域名-从ES获取web服务-katana爬虫-xray扫描-保存结果

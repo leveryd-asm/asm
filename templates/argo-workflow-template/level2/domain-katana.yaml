@@ -66,15 +66,23 @@ spec:
         parameters:
           - name: domain
             description: "eg : example.com"
+          - name: min_port
+            description: min port to search for, e.g. 8000
+          - name: max_port
+            description: max port to search for, e.g. 9000
       steps:
         - - name: call-get-urls-from-es
             arguments:
               parameters:
                 - name: domain
                   value: {{`'{{inputs.parameters.domain}}'`}}
+                - name: min_port
+                  value: {{`'{{inputs.parameters.min_port}}'`}}
+                - name: max_port
+                  value: {{`'{{inputs.parameters.max_port}}'`}}
             templateRef:
               name: asset-level1-web-service
-              template: get-urls-from-es
+              template: get-website-from-es
         - - name: call-get-file-lines-count
             arguments:
               artifacts:

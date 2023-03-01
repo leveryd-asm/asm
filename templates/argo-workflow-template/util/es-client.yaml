@@ -12,7 +12,7 @@ spec:
             default: "*"
           - name: index
             description: Index to search
-            default: "web-service-index"
+            default: "web-service"
           - name: field
             description: Field to search
             default: "url"
