@@ -84,6 +84,13 @@ user_can_deploy_workflowtemplate: true  # if u set false, it will be more secure
 
 # elasticsearch
 elasticsearch:
+  esConfig:
+    elasticsearch.yml: |
+      http:
+        cors.allow-origin: "*"
+        cors.enabled : true
+        cors.allow-methods: OPTIONS, HEAD, GET, POST, PUT, DELETE
+        cors.allow-headers: X-Requested-With,X-Auth-Token,Content-Type,Content-Length
   replicas: 1   # single node
   extraVolumes:
     - name: init-script

@@ -11,6 +11,7 @@ data:
     TEMPLATE_NAME="my_template"
     PIPELINE_NAME="proxify_pipeline"
     INDEX_PATTERN="proxify*"
+    WEB_SERVICE_INDEX_PATTERN="web-service*"
     SHARD_COUNT=1
     REPLICA_COUNT=0
     ES_URL="http://127.0.0.1:9200"
@@ -32,7 +33,7 @@ data:
 
     # set REPLICA_COUNT=0 for single node
     url = ES_URL + "/_template/" + TEMPLATE_NAME
-    data = {"index_patterns":[INDEX_PATTERN],"settings":{"number_of_shards":SHARD_COUNT,"number_of_replicas": REPLICA_COUNT}}
+    data = {"index_patterns":[INDEX_PATTERN, WEB_SERVICE_INDEX_PATTERN],"settings":{"number_of_shards":SHARD_COUNT,"number_of_replicas": REPLICA_COUNT}}
     request = urllib.request.Request(url, headers=headers, data=json.dumps(data).encode(), method='PUT')
     response = urllib.request.urlopen(request)
     #print(url)
