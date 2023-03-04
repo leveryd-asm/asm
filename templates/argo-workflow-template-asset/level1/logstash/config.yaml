@@ -37,3 +37,59 @@ data:
         document_id => "%{url}"
       }
     }
+
+  probe_favicon.conf: |
+    input {
+      file {
+        path => "/tmp/httpx-result.txt"
+        codec => "json"
+        start_position => "beginning"
+        sincedb_path => "/dev/null"
+        exit_after_read => true
+        mode => "read"
+        file_chunk_size => 3145728  # 3MB
+      }
+    }
+
+    filter {
+      mutate {
+        split => { "input" => ":" }
+        add_field => { "domain" => "%{[input][0]}" }
+      }
+      mutate {
+        # it is needed and can not be in last mutate block.
+        # Each mutation must be in its own code block if the sequence of operations needs to be preserved.
+        join => { "input" => ":" }
+      }
+    }
+    output {
+      if ("image" in [content_type]) {
+        elasticsearch {
+          hosts => ["elasticsearch-master:9200"]
+          index => "favicon"
+          document_id => "%{url}"
+        }
+      }
+    }
+
+  probe_tls.conf: |
+    input {
+      file {
+        path => "/tmp/tls-result.txt"
+        codec => "json"
+        start_position => "beginning"
+        sincedb_path => "/dev/null"
+        exit_after_read => true
+        mode => "read"
+        file_chunk_size => 3145728  # 3MB
+      }
+    }
+
+    filter {}
+    output {
+      elasticsearch {
+        hosts => ["elasticsearch-master:9200"]
+        index => "tls"
+        document_id => "%{host}_%{ip}_%{port}"
+      }
+    }

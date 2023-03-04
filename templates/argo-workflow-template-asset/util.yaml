@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: util-asset
+spec:
+  templates:
+    - name: mapcidr
+      inputs:
+        parameters:
+          - name: cidr
+            description: "CIDR to map, eg 173.0.84.0/24"
+      outputs:
+        artifacts:
+          - name: ip-result
+            path: /tmp/cidr.txt
+      script:
+        image: projectdiscovery/mapcidr:v1.0.3
+        command:
+          - "/bin/sh"
+        source: |
+            mapcidr -cidr {{`{{inputs.parameters.cidr}}`}} -skip-base -skip-broadcast -silent -o /tmp/cidr.txt
+            cat /tmp/cidr.txt

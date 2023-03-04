@@ -75,3 +75,20 @@ spec:
         args:
           - "-c"
           - "httpx -fc 0 -l /tmp/hosts -sc -cl -ct -location -lc -wc -rt -title -server -td -ip -cname -asn -cdn -probe -csv -ec -o /tmp/result"
+
+    - name: probe-favicon-from-urlfile
+      inputs:
+        artifacts:
+          - name: hosts
+            path: /tmp/hosts
+      outputs:
+        artifacts:
+          - name: result
+            path: /tmp/favicon.txt
+      container:
+        image: projectdiscovery/httpx:v1.2.7
+        command:
+          - 'sh'
+        args:
+          - "-c"
+          - "httpx -fc 0 -l /tmp/hosts -sc -probe -irrb -ec -path favicon.ico -json -o /tmp/favicon.txt"

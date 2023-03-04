@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: probe-asset-level1-tls
+spec:
+  arguments: {}
+  templates:
+    - name: probe-tls-from-urlfile
+      inputs:
+        artifacts:
+          - name: hosts
+            path: /tmp/hosts
+      outputs:
+        artifacts:
+          - name: result
+            path: /tmp/tls.txt
+      container:
+        image: projectdiscovery/tlsx:v1.0.4
+        command:
+          - 'sh'
+        args:
+          - "-c"
+          - "tlsx -l /tmp/hosts -tv -cipher -wc -tps -ex -ss -mm -re -so -json -o /tmp/tls.txt"

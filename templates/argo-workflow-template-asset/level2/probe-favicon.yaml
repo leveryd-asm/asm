@@ -1,0 +1,41 @@
+# probe web service status for a domain
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: level2-probe-favicon
+spec:
+  volumes:
+    - name: logstash-config-map
+      configMap:
+        name: logstash
+  templates:
+    - name: url-from-es
+      inputs:
+        parameters:
+          - name: q
+            description: "es query"
+      steps:
+        - - name: call-get-urls-from-es-by-query
+            arguments:
+              parameters:
+                - name: q
+                  value: {{`'{{inputs.parameters.q}}'`}}
+            templateRef:
+              name: asset-level1-web-service
+              template: get-urls-from-es-by-query
+        - - name: call-httpx-scan
+            arguments:
+              artifacts:
+                - name: hosts
+                  from: {{`'{{steps.call-get-urls-from-es-by-query.outputs.artifacts.result}}'`}}
+            templateRef:
+              name: probe-asset-level1-tls
+              template: probe-favicon-from-urlfile
+        - - name: logstash
+            arguments:
+              artifacts:
+                - name: httpx-result
+                  from: {{`'{{steps.call-httpx-scan.outputs.artifacts.result}}'`}}
+            templateRef:
+              name: level1-logstash
+              template: httpx-probe-favicon

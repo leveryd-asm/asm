@@ -24,3 +24,33 @@ spec:
         volumeMounts:
           - name: logstash-config-map
             mountPath: /tmp/logstash
+
+    - name: httpx-probe-favicon
+      inputs:
+        artifacts:
+          - name: httpx-result
+            path: /tmp/httpx-result.txt
+      script:
+        image: logstash:7.17.3
+        command:
+          - 'sh'
+        source: |
+          logstash -f /tmp/logstash/probe_favicon.conf
+        volumeMounts:
+          - name: logstash-config-map
+            mountPath: /tmp/logstash
+
+    - name: probe-tls
+      inputs:
+        artifacts:
+          - name: tls-result
+            path: /tmp/tls-result.txt
+      script:
+        image: logstash:7.17.3
+        command:
+          - 'sh'
+        source: |
+          logstash -f /tmp/logstash/probe_tls.conf
+        volumeMounts:
+          - name: logstash-config-map
+            mountPath: /tmp/logstash
