@@ -12,15 +12,13 @@ spec:
       inputs:
         artifacts:
           - name: httpx-result
-            path: /tmp/httpx-result.csv
+            path: /tmp/httpx-result.txt
       script:
         image: logstash:7.17.3
         command:
           - 'sh'
         source: |
-          cp /tmp/httpx-result.csv /tmp/1; # httpx-result.csv is read-only
-          sed -i '1d' /tmp/1;      # remove header
-          cat /tmp/1 | logstash -f /tmp/logstash/httpx.conf
+          logstash -f /tmp/logstash/httpx.conf
         volumeMounts:
           - name: logstash-config-map
             mountPath: /tmp/logstash

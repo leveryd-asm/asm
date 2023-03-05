@@ -5,14 +5,17 @@ metadata:
 data:
   httpx.conf: |
     input {
-        stdin {
-            codec => "plain"
-        }
+      file {
+        path => "/tmp/httpx-result.txt"
+        codec => "json"
+        start_position => "beginning"
+        sincedb_path => "/dev/null"
+        exit_after_read => true
+        mode => "read"
+        file_chunk_size => 3145728  # 3MB
+      }
     }
     filter {
-      csv {
-        columns =>  ["timestamp", "asn", "csp", "tls-grab", "hashes", "regex", "cdn-name", "port", "url", "input", "location", "title", "scheme", "error", "webserver", "response-body", "content-type", "method", "host", "path", "favicon-mmh3", "final-url", "response-header", "request", "response-time", "jarm", "chain-status-codes", "a", "cnames", "technologies", "extracts", "chain", "words", "lines", "status-code", "content-length", "failed", "vhost", "websocket", "cdn", "http2", "pipeline"]
-      }
       mutate {
         convert => ["port","integer"]
         convert => ["words","integer"]
@@ -53,6 +56,13 @@ data:
 
     filter {
       mutate {
+        convert => ["port","integer"]
+        convert => ["words","integer"]
+        convert => ["lines","integer"]
+        convert => ["status-code","integer"]
+        convert => ["content-length","integer"]
+      }
+      mutate {
         split => { "input" => ":" }
         add_field => { "domain" => "%{[input][0]}" }
       }
@@ -85,7 +95,11 @@ data:
       }
     }
 
-    filter {}
+    filter {
+      mutate {
+        convert => ["port","integer"]
+      }
+    }
     output {
       elasticsearch {
         hosts => ["elasticsearch-master:9200"]

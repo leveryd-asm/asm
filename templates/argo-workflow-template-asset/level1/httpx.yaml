@@ -74,7 +74,7 @@ spec:
           - 'sh'
         args:
           - "-c"
-          - "httpx -fc 0 -l /tmp/hosts -sc -cl -ct -location -lc -wc -rt -title -server -td -ip -cname -asn -cdn -probe -csv -ec -o /tmp/result"
+          - "httpx -fc 0 -l /tmp/hosts -sc -cl -ct -location -lc -wc -rt -title -server -td -ip -cname -asn -cdn -probe -json -ec -o /tmp/result"
 
     - name: probe-favicon-from-urlfile
       inputs:
