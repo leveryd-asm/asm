@@ -20,3 +20,26 @@ spec:
         source: |
             mapcidr -cidr {{`{{inputs.parameters.cidr}}`}} -skip-base -skip-broadcast -silent -o /tmp/cidr.txt
             cat /tmp/cidr.txt
+
+    - name: compute-cidr-aggregate-approx
+      inputs:
+        artifacts:
+          - name: compute-cidr-input
+            path: /tmp/cidr.txt
+            description: "Aggregate sparse IPs/CIDRs into minimum approximated subnet"
+      outputs:
+        artifacts:
+          - name: result
+            path: /tmp/cidr.txt
+        parameters:
+          - name: count
+            valueFrom:
+              path: /tmp/count.txt
+      script:
+        image: projectdiscovery/mapcidr:v1.0.3
+        command:
+          - "/bin/sh"
+        source: |
+          mapcidr -cidr /tmp/cidr.txt -aa -o /tmp/cidr.txt
+          cat /tmp/cidr.txt
+          wc -l /tmp/cidr.txt | awk '{print $1}' > /tmp/count.txt

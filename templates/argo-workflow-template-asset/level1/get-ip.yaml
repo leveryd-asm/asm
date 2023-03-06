@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: get-asset-level1-ip
+spec:
+  templates:
+    - name: get-ip-from-es-by-query
+      inputs:
+        parameters:
+          - name: q
+            description: 'elasticsearch query, e.g. "*"'
+            default: "*"
+      outputs:
+        artifacts:
+          - name: result
+            path: /tmp/ip.txt
+        parameters:
+          - name: count
+            valueFrom:
+              path: /tmp/count.txt
+      script:
+        image: leveryd/x-tool:v2023.1.16
+        command:
+          - 'sh'
+        source: |
+          x es -esURL http://elasticsearch-master:9200 -index web-service -num 10000 -q '{{`{{inputs.parameters.q}}`}}' -source host -of /tmp/ip.txt
+          wc -l /tmp/ip.txt | awk '{print $1}' > /tmp/count.txt
