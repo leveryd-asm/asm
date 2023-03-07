@@ -38,6 +38,22 @@ data:
         hosts => ["elasticsearch-master:9200"]
         index => "web-service"
         document_id => "%{url}"
+
+        scripted_upsert => true
+        action => "update"
+        script_lang => "painless"
+        script_type => "inline"
+        script => "
+          if(ctx.op == 'create') {
+            ctx._source=params.event;
+            ctx._source.first_create_time = params.event.get('timestamp');
+          } else {
+            String old = ctx._source.get('first_create_time');
+            ctx._source = params.event;
+            ctx._source.last_update_time = params.event.get('timestamp');
+            ctx._source.first_create_time = old;
+          }
+        "
       }
     }
 
@@ -78,6 +94,22 @@ data:
           hosts => ["elasticsearch-master:9200"]
           index => "favicon"
           document_id => "%{url}"
+
+          scripted_upsert => true
+          action => "update"
+          script_lang => "painless"
+          script_type => "inline"
+          script => "
+            if(ctx.op == 'create') {
+              ctx._source=params.event;
+              ctx._source.first_create_time = params.event.get('timestamp');
+            } else {
+              String old = ctx._source.get('first_create_time');
+              ctx._source = params.event;
+              ctx._source.last_update_time = params.event.get('timestamp');
+              ctx._source.first_create_time = old;
+            }
+          "
         }
       }
     }
@@ -105,5 +137,21 @@ data:
         hosts => ["elasticsearch-master:9200"]
         index => "tls"
         document_id => "%{host}_%{ip}_%{port}"
+
+        scripted_upsert => true
+        action => "update"
+        script_lang => "painless"
+        script_type => "inline"
+        script => "
+          if(ctx.op == 'create') {
+            ctx._source=params.event;
+            ctx._source.first_create_time = params.event.get('timestamp');
+          } else {
+            String old = ctx._source.get('first_create_time');
+            ctx._source = params.event;
+            ctx._source.last_update_time = params.event.get('timestamp');
+            ctx._source.first_create_time = old;
+          }
+        "
       }
     }
