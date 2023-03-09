@@ -5,7 +5,37 @@ metadata:
 spec:
   templates:
     - name: port-scan
-      retryStrategy:      # because '-ec' options maybe fail
+      inputs:
+        artifacts:
+          - name: hosts
+        parameters:
+          - name: port-range
+            default: "8000-9000"
+      outputs:
+        artifacts:
+          - name: result   # every line in the result file will be like "host:port"
+            from: {{`"{{steps.result-to-es.outputs.artifacts.result}}"`}}
+      steps:
+        - - name: naabu
+            arguments:
+              parameters:
+                - name: port-range
+                  value: {{`"{{inputs.parameters.port-range}}"`}}
+              artifacts:
+                - name: hosts
+                  from: {{`"{{inputs.artifacts.hosts}}"`}}
+            template: port-scan-no-save
+        - - name: result-to-es
+            arguments:
+              artifacts:
+                - name: port-result
+                  from: {{`"{{steps.naabu.outputs.artifacts.result}}"`}}
+            templateRef:
+              name: level1-logstash
+              template: probe-port
+
+    - name: port-scan-no-save
+      retryStrategy: # because '-ec' options maybe fail
         limit: "3"
         retryPolicy: "Always"
       inputs:
@@ -19,10 +49,9 @@ spec:
         artifacts:
           - name: result   # every line in the result file will be like "host:port"
             path: /tmp/result
-      container:
+      script:
         image: projectdiscovery/naabu:v2.1.1
         command:
           - 'sh'
-        args:
-          - "-c"
-          - "naabu -l /tmp/hosts -r 114.114.114.114,8.8.8.8 -ec -stats -p {{`{{inputs.parameters.port-range}}`}} -o /tmp/result"
+        source: |
+          naabu -l /tmp/hosts -r 114.114.114.114,8.8.8.8 -ec -stats -p {{`{{inputs.parameters.port-range}}`}} -json -o /tmp/result

@@ -43,3 +43,34 @@ spec:
           mapcidr -cidr /tmp/cidr.txt -aa -o /tmp/cidr.txt
           cat /tmp/cidr.txt
           wc -l /tmp/cidr.txt | awk '{print $1}' > /tmp/count.txt
+
+    - name: print-file-content
+      inputs:
+        artifacts:
+          - name: file
+            path: /tmp/file.txt
+            description: "input file"
+      script:
+        image: ubuntu:lunar-20221207
+        command:
+          - "/bin/sh"
+        source: |
+          cat /tmp/file.txt
+
+    - name: mapcidr-from-file
+      inputs:
+        artifacts:
+          - name: cidr
+            description: "CIDR file to map, eg 173.0.84.0/24"
+            path: /tmp/cidr.txt
+      outputs:
+        artifacts:
+          - name: ip-result
+            path: /tmp/ip.txt
+      script:
+        image: projectdiscovery/mapcidr:v1.0.3
+        command:
+          - "/bin/sh"
+        source: |
+          mapcidr -cidr /tmp/cidr.txt -skip-base -skip-broadcast -silent -o /tmp/ip.txt
+          cat /tmp/ip.txt

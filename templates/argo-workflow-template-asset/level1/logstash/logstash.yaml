@@ -52,3 +52,22 @@ spec:
         volumeMounts:
           - name: logstash-config-map
             mountPath: /tmp/logstash
+
+    - name: probe-port
+      inputs:
+        artifacts:
+          - name: port-result
+            path: /tmp/port-result.txt
+      outputs:
+        artifacts:
+          - name: result
+            path: /tmp/url.txt
+      script:
+        image: logstash:7.17.3
+        command:
+          - 'sh'
+        source: |
+          logstash -f /tmp/logstash/probe_port.conf
+        volumeMounts:
+          - name: logstash-config-map
+            mountPath: /tmp/logstash
