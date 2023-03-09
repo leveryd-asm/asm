@@ -71,3 +71,22 @@ spec:
         volumeMounts:
           - name: logstash-config-map
             mountPath: /tmp/logstash
+
+    - name: subfinder
+      inputs:
+        artifacts:
+          - name: subdomain-result
+            path: /tmp/subdomain-result.txt
+      outputs:
+        artifacts:
+          - name: result
+            path: /tmp/subdomain.txt
+      script:
+        image: logstash:7.17.3
+        command:
+          - 'sh'
+        source: |
+          logstash -f /tmp/logstash/subfinder.conf
+        volumeMounts:
+          - name: logstash-config-map
+            mountPath: /tmp/logstash

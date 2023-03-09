@@ -3,6 +3,10 @@ kind: WorkflowTemplate
 metadata:
   name: level1-get-subdomains
 spec:
+  volumes:
+    - name: logstash-config-map
+      configMap:
+        name: logstash
   templates:
     - name: oneforall
       inputs:
@@ -21,7 +25,7 @@ spec:
           - -c
           - python3 oneforall.py --target {{`{{inputs.parameters.domain}}`}} --dns false run && cat /OneForAll/results/{{`{{inputs.parameters.domain}}`}}.csv | awk -F ',' '{print $6}'|tail -n +2 |sort|uniq > /tmp/result
 
-    - name: subfinder
+    - name: subfinder-no-save
       inputs:
         parameters:
           - name: domain
@@ -35,8 +39,35 @@ spec:
         args:
           - '-d'
           - {{`'{{inputs.parameters.domain}}'`}}
+          - '-json'
           - '-o'
           - '/tmp/result'
+
+    - name: subfinder
+      inputs:
+        parameters:
+          - name: domain
+            description: '域名，比如 apple.com'
+      outputs:
+        artifacts:
+          - name: subdomains
+            from: {{`'{{steps.save.outputs.artifacts.result}}'`}}
+      steps:
+        - - name: subfinder-no-save
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{inputs.parameters.domain}}'`}}
+            template: subfinder-no-save
+        - - name: save
+            arguments:
+              artifacts:
+                - name: subdomain-result
+                  from: {{`'{{steps.subfinder-no-save.outputs.artifacts.subdomains}}'`}}
+            templateRef:
+              name: level1-logstash
+              template: subfinder
+
     - name: get-subdomains-from-es
       inputs:
         parameters:

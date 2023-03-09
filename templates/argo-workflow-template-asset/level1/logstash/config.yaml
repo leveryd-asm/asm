@@ -211,3 +211,53 @@ data:
         }
       }
     }
+
+  subfinder.conf: |
+    input {
+      file {
+        path => "/tmp/subdomain-result.txt"
+        codec => "json"
+        start_position => "beginning"
+        sincedb_path => "/dev/null"
+        exit_after_read => true
+        mode => "read"
+        file_chunk_size => 3145728  # 3MB
+      }
+    }
+
+    filter {
+      mutate {
+        convert => ["port","integer"]
+      }
+    }
+    output {
+      elasticsearch {
+        hosts => ["elasticsearch-master:9200"]
+        index => "subdomain"
+        document_id => "%{input}_%{host}"
+        scripted_upsert => true
+        action => "update"
+        script_lang => "painless"
+        script_type => "inline"
+        script => "
+          if(ctx.op == 'create') {
+            ctx._source=params.event;
+            ctx._source.first_create_time = params.event.get('@timestamp');
+          } else {
+            String old = ctx._source.get('first_create_time');
+            ctx._source = params.event;
+            ctx._source.last_update_time = params.event.get('@timestamp');
+            ctx._source.first_create_time = old;
+          }
+        "
+      }
+
+      if [host] {
+        file {
+          path => "/tmp/subdomain.txt"
+          codec => line {
+            format => "%{host}"
+          }
+        }
+      }
+    }
