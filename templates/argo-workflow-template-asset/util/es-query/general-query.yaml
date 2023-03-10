@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: util-asset-es-query
+spec:
+  entrypoint: query-es
+  volumes:
+    - name: logstash-config-es-general-query
+      configMap:
+        name: logstash-config-es-general-query
+  arguments:
+    parameters:
+      - name: q
+        description: 'elasticsearch query, e.g. "*"'
+        value: "*"
+      - name: index
+        value: "web-service"
+      - name: size
+        value: "10000000"
+      - name: source
+        description: field to return
+        value: "url"
+      - name: format_source
+        description: logstash field reference format, eg "[asn][as-range]"
+        value: "[url]"
+
+  templates:
+    - name: query-es
+      outputs:
+        artifacts:
+          - name: result
+            path: /tmp/result.txt
+        parameters:
+          - name: count
+            valueFrom:
+              path: /tmp/count.txt
+      script:
+        image: logstash:7.17.3
+        env:
+          - name: INDEX
+            value: {{`"{{workflow.parameters.index}}"`}}
+          - name: SIZE
+            value: {{`"{{workflow.parameters.size}}"`}}
+          - name: QUERY
+            value: {{`"{{workflow.parameters.q}}"`}}
+          - name: SOURCE
+            value: {{`"{{workflow.parameters.source}}"`}}
+          - name: FORMAT_SOURCE
+            value: {{`"{{workflow.parameters.format_source}}"`}}
+        command:
+          - 'sh'
+        source: |
+          logstash -f /tmp/logstash/general_query.conf
+
+          cat /tmp/result.txt | sort | uniq > /tmp/result.txt.tmp
+          mv /tmp/result.txt.tmp /tmp/result.txt
+          cat /tmp/result.txt | wc -l > /tmp/count.txt
+        volumeMounts:
+          - name: logstash-config-es-general-query
+            mountPath: /tmp/logstash
