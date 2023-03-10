@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: get-asset-level1-url
+spec:
+  volumes:
+    - name: logstash-config-url
+      configMap:
+        name: logstash-config-url
+  templates:
+    - name: url-from-es
+      inputs:
+        parameters:
+          - name: q
+            description: 'elasticsearch query, e.g. "*"'
+            default: "*"
+      outputs:
+        artifacts:
+          - name: result
+            path: /tmp/url.txt
+        parameters:
+          - name: count
+            valueFrom:
+              path: /tmp/count.txt
+      script:
+        image: logstash:7.17.3
+        command:
+          - 'sh'
+        env:
+          - name: QUERY
+            value: {{`"{{inputs.parameters.q}}"`}}
+        source: |
+          logstash -f /tmp/logstash/url.conf
+
+          cat /tmp/url.txt | sort | uniq > /tmp/url.txt.tmp
+          mv /tmp/url.txt.tmp /tmp/url.txt
+          wc -l /tmp/url.txt | awk '{print $1}' > /tmp/count.txt
+        volumeMounts:
+          - name: logstash-config-url
+            mountPath: /tmp/logstash
