@@ -1,0 +1,74 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: probe-asset-level3-webservice-from-cidr
+spec:
+  arguments: {}
+  volumes:
+    - name: logstash-config-map
+      configMap:
+        name: logstash
+    - name: logstash-config-cidr
+      configMap:
+        name: logstash-config-cidr
+  templates:
+    - name: es查询后聚合ip生成cidr列表-探测web服务-保存结果
+      inputs:
+        parameters:
+          - name: q
+            description: 'elasticsearch query, e.g. "*"'
+            default: "*"
+          - name: port-range
+            description: "探测web服务的端口范围"
+            default: "80,443,8000-9000"
+
+      steps:
+        - - name: call-get-cidr-from-es-by-compute-ip
+            arguments:
+              parameters:
+                - name: q
+                  value: {{`'{{inputs.parameters.q}}'`}}
+            templateRef:
+              name: get-asset-level1-cidr
+              template: aggregate-ip-from-es
+        - - name: call-probe-web-service
+            arguments:
+              artifacts:
+                - name: cidr
+                  from: {{`"{{steps.call-get-cidr-from-es-by-compute-ip.outputs.artifacts.result}}"`}}
+              parameters:
+                - name: port-range
+                  value: {{`'{{inputs.parameters.port-range}}'`}}
+            templateRef:
+              name: level2-probe-web-service-from-ip-segment
+              template: 根据cidr文件获取ip列表-端口扫描-存储结果
+
+    - name: es查询as-range后生成cidr列表-探测web服务-保存结果
+      inputs:
+        parameters:
+          - name: q
+            description: 'elasticsearch query, e.g. "*"'
+            default: "*"
+          - name: port-range
+            description: "探测web服务的端口范围"
+            default: "80,443,8000-9000"
+      steps:
+        - - name: call-get-cidr-from-es
+            arguments:
+              parameters:
+                - name: q
+                  value: {{`'{{inputs.parameters.q}}'`}}
+            templateRef:
+              name: get-asset-level1-cidr
+              template: asn-range-from-es
+        - - name: call-probe-web-service
+            arguments:
+              artifacts:
+                - name: cidr
+                  from: {{`"{{steps.call-get-cidr-from-es.outputs.artifacts.result}}"`}}
+              parameters:
+                - name: port-range
+                  value: {{`'{{inputs.parameters.port-range}}'`}}
+            templateRef:
+              name: level2-probe-web-service-from-ip-segment
+              template: 根据cidr文件获取ip列表-端口扫描-存储结果
