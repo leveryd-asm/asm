@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: update-org-asset-map
+spec:
+  volumes:
+    - name: logstash-config-update-org-asset-map
+      configMap:
+        name: logstash-config-update-org-asset-map
+  templates:
+    - name: update-org-asset-map
+      script:
+        image: logstash:7.17.3
+        command:
+          - 'sh'
+        source: |
+          logstash -f /tmp/logstash/update-org-asset-map.conf --api.enabled false -w 1
+        volumeMounts:
+          - name: logstash-config-update-org-asset-map
+            mountPath: /tmp/logstash
+---
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: cron-update-org-asset-map
+spec:
+  # run every 12 hours
+  schedule: "0 */12 * * *"
+  suspend: false
+  workflowSpec:
+    workflowTemplateRef:
+      name: update-org-asset-map
+    entrypoint: update-org-asset-map

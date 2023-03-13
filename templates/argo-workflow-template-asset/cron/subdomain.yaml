@@ -3,7 +3,7 @@ kind: CronWorkflow
 metadata:
   name: cron-get-subdomain
 spec:
-  # run everyd two days
+  # run every two days
   schedule: "0 0 */2 * *"
   suspend: false
   workflowSpec:

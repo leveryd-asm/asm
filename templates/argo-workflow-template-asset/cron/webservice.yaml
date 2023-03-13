@@ -3,7 +3,7 @@ kind: CronWorkflow
 metadata:
   name: cron-probe-web-service
 spec:
-  # run everyd two days
+  # run every two days
   schedule: "0 0 */2 * *"
   concurrencyPolicy: Forbid  # do not allow any new while there are old
   suspend: false

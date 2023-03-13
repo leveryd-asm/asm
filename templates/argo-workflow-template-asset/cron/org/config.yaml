@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config-update-org-asset-map
+data:
+  update-org-asset-map.conf: |
+    input {
+      file {
+        path => "/tmp/logstash/org.txt"
+        codec => "json"
+        start_position => "beginning"
+        sincedb_path => "/dev/null"
+        exit_after_read => true
+        mode => "read"
+        file_chunk_size => 3145728  # 3MB
+      }
+    }
+
+    filter {
+      http {
+        url => "http://elasticsearch-master:9200/%{index}/_update_by_query"
+        verb => "POST"
+        body_format => "json"
+        body => {
+          "script" => {
+            "lang" => "painless"
+            "source" => "
+              ArrayList org;
+
+              if (ctx._source.org != null) {
+                org = ctx._source.org
+              } else {
+                org = new ArrayList();
+              }
+              org.add(params.org);
+
+              // https://www.geeksforgeeks.org/how-to-remove-duplicates-from-arraylist-in-java/
+              LinkedHashSet newOrg = new LinkedHashSet();
+              newOrg.addAll(org);
+              org.clear();
+              org.addAll(newOrg);
+
+              ctx._source.org=org;
+              ctx._source.org_num=org.size();
+            "
+            "params" => {
+              "org" => "%{org}"
+              "index" => "%{index}"
+            }
+          }
+          "query" => {
+            "query_string" => {
+              "query" => "%{query}"
+            }
+          }
+        }
+      }
+
+      sleep {
+        # sleep 2 second for every event.
+        time => "2"
+      }
+    }
+
+    output {
+      stdout {
+        codec => rubydebug
+      }
+    }
+  org.txt: |
+    { "org": "百度", "query": "subject_org:baidu OR subject_org:百度", "index": "tls" }
+    { "org": "百度", "query": "title:baidu OR title:百度", "index": "web-service" }
+    { "org": "百度", "query": "response-body:baidu OR response-body:百度", "index": "web-service" }
+    { "org": "百度", "query": "parsed-domain.registered_domain:baidu.com", "index": "web-service" }
+    { "org": "百度", "query": "asn.as-name:baidu OR asn.as-name:百度", "index": "web-service" }
