@@ -20,7 +20,7 @@ spec:
           - 'sh'
         args:
           - "-c"
-          - "httpx -l /tmp/hosts -p http:80,https:443 -fc 404,403,500,301,302 -ct -o /tmp/1 && grep -i html /tmp/1 | awk '{print $1}' > /tmp/result"
+          - "httpx -stats -l /tmp/hosts -p http:80,https:443 -fc 404,403,500,301,302 -ct -o /tmp/1 && grep -i html /tmp/1 | awk '{print $1}' > /tmp/result"
 
     - name: probe-from-file
       inputs:
@@ -40,7 +40,7 @@ spec:
           - 'sh'
         args:
           - "-c"
-          - "httpx -l /tmp/hosts -p {{`{{inputs.parameters.port-range}}`}} -fc 404,403,500 -ct -o /tmp/1 && grep -i html /tmp/1 | awk '{print $1}' > /tmp/result"
+          - "httpx -stats -l /tmp/hosts -p {{`{{inputs.parameters.port-range}}`}} -fc 404,403,500 -ct -o /tmp/1 && grep -i html /tmp/1 | awk '{print $1}' > /tmp/result"
 
     - name: probe-from-file-no-port
       inputs:
@@ -57,7 +57,7 @@ spec:
           - 'sh'
         args:
           - "-c"
-          - "httpx -l /tmp/hosts -ec -o /tmp/result"
+          - "httpx -stats -l /tmp/hosts -ec -o /tmp/result"
 
     - name: probe-all-from-file-no-port
       inputs:
@@ -74,7 +74,7 @@ spec:
           - 'sh'
         args:
           - "-c"
-          - "httpx -fc 0 -l /tmp/hosts -sc -cl -ct -location -lc -wc -rt -title -server -td -ip -cname -asn -cdn -probe -json -ec -o /tmp/result"
+          - "httpx -stats -fc 0 -l /tmp/hosts -sc -cl -ct -location -lc -wc -rt -title -server -td -ip -cname -asn -cdn -probe -json -ec -o /tmp/result"
 
     - name: probe-favicon-from-urlfile
       inputs:
@@ -91,4 +91,4 @@ spec:
           - 'sh'
         args:
           - "-c"
-          - "httpx -fc 0 -l /tmp/hosts -sc -probe -irrb -ec -path favicon.ico -json -o /tmp/favicon.txt"
+          - "httpx -stats -fc 0 -l /tmp/hosts -sc -probe -irrb -ec -path favicon.ico -json -o /tmp/favicon.txt"
