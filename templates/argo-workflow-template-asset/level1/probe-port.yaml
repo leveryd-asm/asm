@@ -1,8 +1,16 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: level1-naabu
+  name: probe-asset-level1-port
 spec:
+  arguments:
+    parameters:
+    - name: passive
+      description: "passive mode (default: false)"
+      default: "false"
+      enum:
+        - "true"
+        - "false"
   templates:
     - name: port-scan
       inputs:
@@ -44,7 +52,7 @@ spec:
             path: /tmp/hosts
         parameters:
           - name: port-range
-            value: "8000-9000"
+            default: "8000-9000"
       outputs:
         artifacts:
           - name: result   # every line in the result file will be like "host:port"
@@ -54,4 +62,9 @@ spec:
         command:
           - 'sh'
         source: |
-          naabu -l /tmp/hosts -r 114.114.114.114,8.8.8.8 -ec -stats -p {{`{{inputs.parameters.port-range}}`}} -json -o /tmp/result
+          if [ "{{`{{workflow.parameters.passive}}`}}"="true" ]
+          then
+            naabu -l /tmp/hosts -r 114.114.114.114,8.8.8.8 -ec -passive -json -o /tmp/result # 使用passive时-p参数、-stats无效
+          else
+            naabu -l /tmp/hosts -r 114.114.114.114,8.8.8.8 -ec -stats -p {{`{{inputs.parameters.port-range}}`}} -json -o /tmp/result
+          fi

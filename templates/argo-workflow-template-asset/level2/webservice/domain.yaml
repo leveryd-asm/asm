@@ -4,6 +4,14 @@ kind: WorkflowTemplate
 metadata:
   name: level2-probe-web-service
 spec:
+  arguments:
+    parameters:
+      - name: passive
+        description: "passive mode (default: false)"
+        default: "false"
+        enum:
+          - "true"
+          - "false"
   volumes:
     - name: logstash-config-map
       configMap:
@@ -30,7 +38,7 @@ spec:
                 - name: port-range
                   value: {{`'{{inputs.parameters.port-range}}'`}}
             templateRef:
-              name: level1-naabu
+              name: probe-asset-level1-port
               template: port-scan
         - - name: call-httpx-scan
             arguments:
@@ -88,7 +96,7 @@ spec:
                 - name: port-range
                   value: {{`'{{inputs.parameters.port-range}}'`}}
             templateRef:
-              name: level1-naabu
+              name: probe-asset-level1-port
               template: port-scan
         - - name: call-httpx-scan
             arguments:

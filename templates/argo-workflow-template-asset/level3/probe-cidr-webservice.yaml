@@ -3,7 +3,14 @@ kind: WorkflowTemplate
 metadata:
   name: probe-asset-level3-webservice-from-cidr
 spec:
-  arguments: {}
+  arguments:
+    parameters:
+      - name: passive
+        description: "passive mode (default: false)"
+        default: "false"
+        enum:
+          - "true"
+          - "false"
   volumes:
     - name: logstash-config-map
       configMap:
