@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: level2-general-es-nuclei
+spec:
+  volumes:
+    - name: logstash-config-es-general-query
+      configMap:
+        name: logstash-config-es-general-query
+  arguments:
+    parameters:
+      - name: q
+        description: 'elasticsearch query, e.g. "*"'
+        default: "response_content_type :'html' AND status_code:200"
+      - name: index
+        default: "proxify"
+      - name: size
+        default: "10000000"
+      - name: source
+        description: field to return
+        default: "url"
+      - name: format_source
+        description: logstash field reference format, eg "[asn][as-range]"
+        default: "[url]"
+      - name: itags
+        default: "sqli,xss"
+  templates:
+    - name: es查询webservice获取url列表-nuclei扫描-保存结果
+      steps:
+        - - name: call-url-from-es
+            templateRef:
+              name: util-asset-es-query
+              template: query-es
+        - - name: call-nuclei-scan
+            arguments:
+              artifacts:
+                - name: hosts
+                  from: {{`'{{steps.call-url-from-es.outputs.artifacts.result}}'`}}
+            templateRef:
+              name: webscan-level1-fuzz
+              template: fuzz
+        - - name: call-save-nuclei-alarm
+            arguments:
+              artifacts:
+                - from: {{`'{{steps.call-nuclei-scan.outputs.artifacts.nuclei-result}}'`}}
+                  name: result
+            templateRef:
+              name: level1-save-alarm
+              template: save-nuclei

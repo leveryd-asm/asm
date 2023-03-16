@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: webscan-level1-fuzz
+spec:
+  arguments:
+    parameters:
+      - name: itags
+        default: "sqli,xss"
+  templates:
+    - name: fuzz
+      inputs:
+        artifacts:
+          - name: hosts
+            path: /tmp/host
+      outputs:
+        artifacts:
+          - name: nuclei-result
+            path: /tmp/nuclei-result.json
+      script:
+        image: 'projectdiscovery/nuclei:v2.8.3'
+        command: [sh]
+        source: |
+          nuclei -duc -l /tmp/host -itags {{`{{workflow.parameters.itags}} `}} -ni -o /tmp/nuclei-result.json
+        volumeMounts:
+          - name: template-dir
+            mountPath: /root/nuclei-templates
+      volumes:
+        - name: template-dir
+          persistentVolumeClaim:
+            claimName: nuclei-template
