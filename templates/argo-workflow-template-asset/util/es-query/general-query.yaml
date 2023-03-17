@@ -4,10 +4,6 @@ metadata:
   name: util-asset-es-query
 spec:
   entrypoint: query-es
-  volumes:
-    - name: logstash-config-es-general-query
-      configMap:
-        name: logstash-config-es-general-query
   arguments:
     parameters:
       - name: q
@@ -58,3 +54,7 @@ spec:
         volumeMounts:
           - name: logstash-config-es-general-query
             mountPath: /tmp/logstash
+      volumes:
+        - name: logstash-config-es-general-query
+          configMap:
+            name: logstash-config-es-general-query

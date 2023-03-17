@@ -178,6 +178,11 @@ data:
       if !("" in [tmp_field][host]) {
         mutate {
           add_field => { "[tmp_field][host]" => "no-host" }
+          add_field => { "[tmp_field][link]" => "[tmp_field][ip]:[tmp_field][port]" }
+        }
+      } else {
+        mutate {
+          add_field => { "[tmp_field][link]" => "[tmp_field][host]:[tmp_field][port]" }
         }
       }
     }
@@ -203,7 +208,7 @@ data:
         "
       }
 
-      if [tmp_field][host] {
+      if ([tmp_field][host]!="no-host") {
         file {
           path => "/tmp/url.txt"
           codec => line {

@@ -1,0 +1,48 @@
+# probe web service status for ip segment
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: probe-asset-level2-web-service-from-port
+spec:
+  arguments:
+    parameters:
+      - name: q
+        description: 'elasticsearch query, e.g. "*"'
+        default: "host:apple.com"
+      - name: index
+        default: "port"
+      - name: size
+        default: "10000000"
+      - name: source
+        description: field to return
+        default: "link"
+      - name: format_source
+        description: logstash field reference format, eg "[asn][as-range]"
+        default: "[link]"
+  volumes:
+    - name: logstash-config-map
+      configMap:
+        name: logstash
+  templates:
+    - name: 根据查询获取主机端口信息-收集首页信息-存储结果
+      steps:
+        - - name: call-url-from-es
+            templateRef:
+              name: util-asset-es-query
+              template: query-es
+        - - name: call-httpx-scan
+            arguments:
+              artifacts:
+                - name: hosts
+                  from: {{`'{{steps.call-url-from-es.outputs.artifacts.result}}'`}}
+            templateRef:
+              name: level1-httpx
+              template: probe-all-from-file-no-port
+        - - name: logstash
+            arguments:
+              artifacts:
+                - name: httpx-result
+                  from: {{`'{{steps.call-httpx-scan.outputs.artifacts.urls}}'`}}
+            templateRef:
+              name: level1-logstash
+              template: httpx2elasticsearch
