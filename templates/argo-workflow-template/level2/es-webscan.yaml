@@ -22,7 +22,7 @@ spec:
       - name: format_source
         description: logstash field reference format, eg "[asn][as-range]"
         default: "[url]"
-      - name: itags
+      - name: tags
         default: "sqli,xss"
   templates:
     - name: es查询webservice获取url列表-nuclei扫描-保存结果

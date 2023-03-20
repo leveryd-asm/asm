@@ -5,7 +5,7 @@ metadata:
 spec:
   arguments:
     parameters:
-      - name: itags
+      - name: tags
         default: "sqli,xss"
   templates:
     - name: fuzz
@@ -21,7 +21,7 @@ spec:
         image: 'projectdiscovery/nuclei:v2.8.3'
         command: [sh]
         source: |
-          nuclei -duc -l /tmp/host -itags {{`{{workflow.parameters.itags}} `}} -ni -o /tmp/nuclei-result.json
+          nuclei -duc -l /tmp/host -stats -tags {{`{{workflow.parameters.tags}} `}} -ni -o /tmp/nuclei-result.json
         volumeMounts:
           - name: template-dir
             mountPath: /root/nuclei-templates
