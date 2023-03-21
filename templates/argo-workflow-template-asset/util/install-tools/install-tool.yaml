@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: util-install-tool
+spec:
+  entrypoint: install-tool
+  templates:
+    - name: install-tool
+      script:
+        image: busybox:glibc
+        command:
+          - 'sh'
+        source: |
+
+          wget https://github.com/xiecat/fofax/releases/download/v0.1.42/fofax_v0.1.42_linux_amd64.tar.gz
+          mkdir -p /tmp/tools/fofax
+          tar -xvf fofax_v0.1.42_linux_amd64.tar.gz -C /tmp/tools/fofax
+          rm fofax_v0.1.42_linux_amd64.tar.gz
+          ls -al /tmp/tools/fofax
+
+        volumeMounts:
+          - name: tools
+            mountPath: /tmp/tools
+      volumes:
+        - name: tools
+          persistentVolumeClaim:
+            claimName: tools

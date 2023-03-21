@@ -124,3 +124,7 @@ kibana:
       server.basePath="/kibana"
       server.host="0.0.0.0"
       server.rewriteBasePath=true
+
+# passive asset
+fofa_key: ""
+fofa_email: ""

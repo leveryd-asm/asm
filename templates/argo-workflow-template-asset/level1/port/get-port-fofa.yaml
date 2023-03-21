@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: get-asset-level1-fofa
+spec:
+  arguments:
+    parameters:
+      - name: fofa_key
+        default: "{{.Values.fofa_key}}"
+        description: "fofa key, can be specified when operator install asm instance"
+      - name: fofa_email
+        default: "{{.Values.fofa_email}}"
+        description: "fofa email, can be specified when operator install asm instance"
+      - name: query
+        description: "fofa query, do not use single quotes"
+      - name: size
+        default: 10
+        description: "number of results to return"
+  templates:
+    - name: fofa-client
+      outputs:
+        parameters:
+          - name: count
+            valueFrom:
+              path: /tmp/count.txt
+        artifacts:
+          - name: result
+            path: /tmp/result.txt
+      script:
+        image: busybox:glibc
+        command: ["/bin/sh"]
+        env:
+          - name: FOFA_KEY
+            value: {{`"{{workflow.parameters.fofa_key}}"`}}
+          - name: FOFA_EMAIL
+            value: {{`"{{workflow.parameters.fofa_email}}"`}}
+        source: |
+          cp /tmp/tools/fofax/fofax /bin/fofax
+          fofax -silent    # create config
+          fofax -q '{{`{{workflow.parameters.query}}`}}' -fs {{`{{workflow.parameters.size}}`}} -ff host,port,ip,lastupdatetime > /tmp/result.txt
+          cat /tmp/result.txt | wc -l > /tmp/count.txt
+        volumeMounts:
+          - name: tools
+            mountPath: /tmp/tools
+      volumes:
+        - name: tools
+          persistentVolumeClaim:
+            claimName: tools
