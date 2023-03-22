@@ -3,7 +3,14 @@ kind: WorkflowTemplate
 metadata:
   name: level3-nuclei
 spec:
-  arguments: {}
+  arguments:
+    parameters:
+      - name: passive
+        description: "passive mode (default: false)"
+        default: "false"
+        enum:
+          - "true"
+          - "false"
   templates:
     - name: 从API获取兄弟域名-获取子域名-nuclei扫描-保存结果
       inputs:
