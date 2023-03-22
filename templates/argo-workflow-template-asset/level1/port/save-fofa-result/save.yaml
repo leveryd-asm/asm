@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: save-asset-level1-fofa-to-es
+spec:
+  templates:
+    - name: fofa
+      volumes:
+        - name: logstash-config-fofa
+          configMap:
+            name: logstash-config-fofa
+      inputs:
+        artifacts:
+          - name: port
+            path: /tmp/port.txt   # host,port,ip,lastupdatetime
+          - name: subdomain
+            path: /tmp/subdomain.txt   # host,lastupdatetime
+      script:
+        image: logstash:7.17.3
+        command:
+          - 'sh'
+        source: |
+          logstash -f /tmp/logstash/port.conf
+          logstash -f /tmp/logstash/subdomain.conf
+        volumeMounts:
+          - name: logstash-config-fofa
+            mountPath: /tmp/logstash

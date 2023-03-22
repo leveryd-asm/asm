@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: level2-fofa-nuclei
+spec:
+  arguments:
+    parameters:
+      - name: fofa_key
+        default: "{{.Values.fofa_key}}"
+        description: "fofa key, can be specified when operator install asm instance"
+      - name: fofa_email
+        default: "{{.Values.fofa_email}}"
+        description: "fofa email, can be specified when operator install asm instance"
+      - name: query
+        description: "fofa query, do not use single quotes"
+        default: 'host=".apple.com"'
+      - name: size
+        default: 10
+        description: "number of results to return"
+  templates:
+    - name: fofa查询获取url列表-nuclei扫描-保存结果 # fofa获取的host可能有误报
+      steps:
+        - - name: call-fofa
+            templateRef:
+              name: get-asset-level1-fofa
+              template: fofa-client
+        - - name: call-nuclei-scan
+            arguments:
+              artifacts:
+                - name: hosts
+                  from: {{`'{{steps.call-fofa.outputs.artifacts.urls}}'`}}
+            templateRef:
+              name: level1-nuclei
+              template: nuclei-scan
+        - - name: call-save-nuclei-alarm
+            arguments:
+              artifacts:
+                - from: {{`'{{steps.call-nuclei-scan.outputs.artifacts.nuclei-result}}'`}}
+                  name: result
+            templateRef:
+              name: level1-save-alarm
+              template: save-nuclei

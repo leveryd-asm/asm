@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-nuclei
+data:
+  provider-config.yaml: |
+    fofa:
+      - {{.Values.fofa_email}}:{{.Values.fofa_key}}

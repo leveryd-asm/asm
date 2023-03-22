@@ -34,14 +34,19 @@ spec:
         artifacts:
           - name: subdomains
             path: /tmp/result
-      container:
+      volumes:
+        - name: config-nuclei
+          configMap:
+            name: config-nuclei
+      script:
+        volumeMounts:
+          - name: config-nuclei
+            mountPath: /root/.config/subfinder/
         image: 'projectdiscovery/subfinder:v2.5.5'
-        args:
-          - '-d'
-          - {{`'{{inputs.parameters.domain}}'`}}
-          - '-json'
-          - '-o'
-          - '/tmp/result'
+        command:
+          - sh
+        source: |
+          subfinder -active -d {{`'{{inputs.parameters.domain}}'`}} -json -o /tmp/result
 
     - name: subfinder
       inputs:

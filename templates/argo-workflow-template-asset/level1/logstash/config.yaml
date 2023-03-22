@@ -247,7 +247,8 @@ data:
       elasticsearch {
         hosts => ["elasticsearch-master:9200"]
         index => "subdomain"
-        document_id => "%{input}_%{host}"
+        document_id => "%{host}"
+
         scripted_upsert => true
         action => "update"
         script_lang => "painless"
