@@ -73,3 +73,4 @@ data:
     { "org": "百度", "query": "response-body:baidu OR response-body:百度", "index": "web-service" }
     { "org": "百度", "query": "parsed-domain.registered_domain:baidu.com", "index": "web-service" }
     { "org": "百度", "query": "asn.as-name:baidu OR asn.as-name:百度", "index": "web-service" }
+    { "org": "百度", "query": "parsed-domain.registered_domain.keyword :*baidu*", "index": "subdomain,port,web-service" }

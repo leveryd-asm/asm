@@ -1,0 +1,46 @@
+# to manage elasticsearch, bash code is better than python, easier to debug and read
+# that's why we use bash for the elasticsearch management
+
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: service-elasticsearch-pipeline
+spec:
+  templates:
+    - name: create-and-set-default-pipeline
+      script:
+        image: alpine/curl:3.14
+        command: [sh]
+        source: |
+          #!/bin/sh
+
+          echo "Creating pipeline"
+
+          curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/_ingest/pipeline/subdomain-parse-domain" -H 'Content-Type: application/json' -d '
+          {
+            "processors" : [
+              {
+                "registered_domain" : {
+                  "field" : "host",
+                  "target_field" : "parsed-domain",
+                  "ignore_failure" : true
+                }
+              }
+            ]
+          }'
+
+          echo "Creating index"
+
+          curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/subdomain"
+          curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/port"
+
+          echo "Setting default pipeline"
+
+          # set the "subdomain-parse-domain" pipeline as "subdomain" index's default pipeline
+          curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/subdomain,port/_settings" -H 'Content-Type: application/json' -d '
+          {
+            "index": {
+              "default_pipeline": "subdomain-parse-domain"
+            }
+          }
+          '
