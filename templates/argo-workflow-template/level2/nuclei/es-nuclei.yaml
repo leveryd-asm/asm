@@ -3,10 +3,6 @@ kind: WorkflowTemplate
 metadata:
   name: level2-es-nuclei
 spec:
-  volumes:
-    - name: logstash-config-url
-      configMap:
-        name: logstash-config-url
   templates:
     - name: es查询webservice获取url列表-nuclei扫描-保存结果
       inputs:

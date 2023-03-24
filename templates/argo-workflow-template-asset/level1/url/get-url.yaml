@@ -3,12 +3,12 @@ kind: WorkflowTemplate
 metadata:
   name: get-asset-level1-url
 spec:
-  volumes:
-    - name: logstash-config-url
-      configMap:
-        name: logstash-config-url
   templates:
     - name: url-from-es
+      volumes:
+        - name: logstash-config-url
+          configMap:
+            name: logstash-config-url
       inputs:
         parameters:
           - name: q

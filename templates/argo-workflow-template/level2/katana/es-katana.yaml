@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: level2-es-katana
+spec:
+  templates:
+    - name: 获取web服务-katana爬虫-xray扫描-保存结果
+      parallelism: 3
+      inputs:
+        parameters:
+          - name: q
+            description: 'elasticsearch query from web-service index, e.g. "*"'
+            default: "*"
+      steps:
+        - - name: call-url-from-es
+            arguments:
+              parameters:
+                - name: q
+                  value: {{`'{{inputs.parameters.q}}'`}}
+            templateRef:
+              name: get-asset-level1-url
+              template: url-from-es
+        - - name: call-get-file-lines-count
+            arguments:
+              artifacts:
+                - name: file
+                  from: {{`'{{steps.call-url-from-es.outputs.artifacts.result}}'`}}
+            templateRef:
+              name: util
+              template: get-file-lines-count
+        - - name: call-katana-from-file-index
+            arguments:
+              artifacts:
+                - name: domains
+                  from: {{`'{{steps.call-url-from-es.outputs.artifacts.result}}'`}}
+              parameters:
+                - name: index
+                  value: {{`"{{item}}"`}}
+            templateRef:
+              name: level1-crawler
+              template: katana-from-file-index
+            withSequence:
+              count: {{`"{{steps.call-get-file-lines-count.outputs.result}}"`}}
