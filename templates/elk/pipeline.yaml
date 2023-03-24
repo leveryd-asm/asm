@@ -33,10 +33,11 @@ spec:
 
           curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/subdomain"
           curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/port"
+          curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/proxify"
 
           echo "Setting default pipeline"
 
-          # set the "subdomain-parse-domain" pipeline as "subdomain" index's default pipeline
+          # set the "subdomain-parse-domain" pipeline as default pipeline
           curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/subdomain,port/_settings" -H 'Content-Type: application/json' -d '
           {
             "index": {

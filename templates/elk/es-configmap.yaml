@@ -125,8 +125,15 @@ data:
     },
     {
       "script": {
-        "source": "ctx[\"url\"] = ctx[\"host\"] + ctx[\"uri\"];\nctx[\"tag\"] = []",
+        "source": "ctx[\"url\"] = ctx[\"host\"] + ctx[\"uri\"];\nctx[\"tag\"] = [];ctx[\"_id\"] = ctx[\"url\"]",
         "ignore_failure": True
+      }
+    },
+    {
+      "registered_domain" : {
+        "field" : "host",
+        "target_field" : "parsed-domain",
+        "ignore_failure" : True
       }
     }
     ]}

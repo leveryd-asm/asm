@@ -43,6 +43,7 @@ spec:
       container:
         image: 'projectdiscovery/nuclei:v2.8.3'
         args:
+          - '-stats'
           - '-duc'
           - '-l'
           - /tmp/host
