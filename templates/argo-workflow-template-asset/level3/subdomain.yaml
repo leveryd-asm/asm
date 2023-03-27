@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: level3-subdomain
+  name: probe-asset-level3-subdomain
 spec:
   templates:
     - name: 从API获取兄弟域名-获取子域名-保存结果
@@ -25,7 +25,7 @@ spec:
               template: from-console-api
         - - name: call-get-subdomains-save
             templateRef:
-              name: level2-save-subdomains
+              name: probe-asset-level2-subdomain
               template: get-subdomains-save
             arguments:
               parameters:

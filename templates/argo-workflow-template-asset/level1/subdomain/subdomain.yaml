@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: level1-get-subdomains
+  name: probe-asset-level1-subdomain
 spec:
   volumes:
     - name: logstash-config-map

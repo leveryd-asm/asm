@@ -8,7 +8,7 @@ spec:
   suspend: false
   workflowSpec:
     workflowTemplateRef:
-      name: level3-subdomain
+      name: probe-asset-level3-subdomain
     arguments:
       parameters:
         - name: query

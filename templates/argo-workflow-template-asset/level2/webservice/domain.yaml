@@ -85,7 +85,7 @@ spec:
                 - name: save-subdomain-result
                   value: {{`'{{inputs.parameters.save-subdomain-result}}'`}}
             templateRef:
-              name: level2-save-subdomains
+              name: probe-asset-level2-subdomain
               template: get-subdomains-save
         - - name: call-port-scan
             arguments:

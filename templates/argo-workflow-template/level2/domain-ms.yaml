@@ -22,7 +22,7 @@ spec:
       steps:
         - - name: call-get-subdomains-save
             templateRef:
-              name: level2-save-subdomains
+              name: probe-asset-level2-subdomain
               template: get-subdomains-save
             arguments:
               parameters:

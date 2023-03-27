@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: level2-fofa-nuclei
+  name: probe-asset-level2-webservice-from-fofa
 spec:
   arguments:
     parameters:
@@ -18,25 +18,36 @@ spec:
         default: 10
         description: "number of results to return"
   templates:
-    - name: fofa查询获取url列表-nuclei扫描-保存结果 # fofa获取的host可能有误报
+    - name: fofa
+      outputs:
+        parameters:
+          - name: count
+            valueFrom:
+              parameter: {{`"{{steps.call-fofa.outputs.parameters.count}}"`}}
+        artifacts:
+          - name: result
+            description: "csv type"
+            from: {{`"{{steps.call-fofa.outputs.artifacts.result}}"`}}
+          - name: urls
+            from: {{`'{{steps.call-httpx-scan.outputs.artifacts.urls}}'`}}
       steps:
         - - name: call-fofa
             templateRef:
-              name: probe-asset-level2-webservice-from-fofa
-              template: fofa
-        - - name: call-nuclei-scan
+              name: get-asset-level1-fofa
+              template: fofa-client
+        - - name: call-httpx-scan
             arguments:
               artifacts:
                 - name: hosts
                   from: {{`'{{steps.call-fofa.outputs.artifacts.urls}}'`}}
             templateRef:
-              name: level1-nuclei
-              template: nuclei-scan
-        - - name: call-save-nuclei-alarm
+              name: level1-httpx
+              template: probe-all-from-file-no-port
+        - - name: logstash
             arguments:
               artifacts:
-                - from: {{`'{{steps.call-nuclei-scan.outputs.artifacts.nuclei-result}}'`}}
-                  name: result
+                - name: httpx-result
+                  from: {{`'{{steps.call-httpx-scan.outputs.artifacts.urls}}'`}}
             templateRef:
-              name: level1-save-alarm
-              template: save-nuclei
+              name: level1-logstash
+              template: httpx2elasticsearch

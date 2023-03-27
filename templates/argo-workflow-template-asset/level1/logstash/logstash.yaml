@@ -3,12 +3,12 @@ kind: WorkflowTemplate
 metadata:
   name: level1-logstash
 spec:
-  volumes:
-    - name: logstash-config-map
-      configMap:
-        name: logstash
   templates:
     - name: httpx2elasticsearch
+      volumes:
+        - name: logstash-config-map
+          configMap:
+            name: logstash
       inputs:
         artifacts:
           - name: httpx-result
@@ -24,6 +24,10 @@ spec:
             mountPath: /tmp/logstash
 
     - name: httpx-probe-favicon
+      volumes:
+        - name: logstash-config-map
+          configMap:
+            name: logstash
       inputs:
         artifacts:
           - name: httpx-result
@@ -39,6 +43,10 @@ spec:
             mountPath: /tmp/logstash
 
     - name: probe-tls
+      volumes:
+        - name: logstash-config-map
+          configMap:
+            name: logstash
       inputs:
         artifacts:
           - name: tls-result
@@ -54,6 +62,10 @@ spec:
             mountPath: /tmp/logstash
 
     - name: probe-port
+      volumes:
+        - name: logstash-config-map
+          configMap:
+            name: logstash
       inputs:
         artifacts:
           - name: port-result
@@ -73,6 +85,10 @@ spec:
             mountPath: /tmp/logstash
 
     - name: subfinder
+      volumes:
+        - name: logstash-config-map
+          configMap:
+            name: logstash
       inputs:
         artifacts:
           - name: subdomain-result

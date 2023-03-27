@@ -16,7 +16,7 @@ spec:
                 - name: domain
                   value: {{`'{{inputs.parameters.domain}}'`}}
             templateRef:
-              name: level1-get-subdomains
+              name: probe-asset-level1-subdomain
               template: subfinder
         - - name: call-katana-service-from-file
             arguments:
@@ -41,7 +41,7 @@ spec:
       steps:
         - - name: call-get-subdomains-save
             templateRef:
-              name: level2-save-subdomains
+              name: probe-asset-level2-subdomain
               template: get-subdomains-save
             arguments:
               parameters:

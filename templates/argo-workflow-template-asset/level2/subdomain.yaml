@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: level2-save-subdomains
+  name: probe-asset-level2-subdomain
 spec:
   templates:
     - name: get-subdomains-save
@@ -19,7 +19,7 @@ spec:
       steps:
         - - name: get-subdomains
             templateRef:
-              name: level1-get-subdomains
+              name: probe-asset-level1-subdomain
               template: get-subdomain
             arguments:
               parameters:
