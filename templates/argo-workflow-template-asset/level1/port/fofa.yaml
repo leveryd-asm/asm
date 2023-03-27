@@ -12,7 +12,7 @@ spec:
         default: "{{.Values.fofa_email}}"
         description: "fofa email, can be specified when operator install asm instance"
       - name: query
-        description: "fofa query, do not use single quotes"
+        description: "multiple fofa query, do not use single quotes"
       - name: size
         default: 10
         description: "number of results to return"
@@ -32,8 +32,8 @@ spec:
           - name: hosts
             path: /tmp/hosts.txt
       script:
-        image: busybox:glibc
-        command: ["/bin/sh"]
+        image: ubuntu:lunar-20221207
+        command: ["bash"]
         env:
           - name: FOFA_KEY
             value: {{`"{{workflow.parameters.fofa_key}}"`}}
@@ -43,7 +43,12 @@ spec:
           cp /tmp/tools/fofax/fofax /bin/fofax
           fofax -disable-update -silent    # create config
 
-          fofax -disable-update -q '{{`{{workflow.parameters.query}}`}}' -fs {{`{{workflow.parameters.size}}`}} -ff host,port,ip,lastupdatetime > /tmp/result.txt
+          # https://stackoverflow.com/questions/22697688/how-to-cat-eof-a-file-containing-code
+          cat <<< '
+          {{`{{workflow.parameters.query}}`}}
+          ' > /tmp/query.txt
+
+          fofax -disable-update -qf /tmp/query.txt -fs {{`{{workflow.parameters.size}}`}} -ff host,port,ip,lastupdatetime > /tmp/result.txt
 
           awk -F',' '{printf "%s:%s\n",$1,$2;}' /tmp/result.txt | sort | uniq > /tmp/urls.txt
 

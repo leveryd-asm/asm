@@ -26,6 +26,13 @@ data:
         }
         remove_field => ["message", "path"]
       }
+
+      mutate {
+        gsub => [
+          "host", "https?://", "",
+          "host", ":[\d]+", ""
+        ]
+      }
     }
     output {
       elasticsearch {
@@ -70,6 +77,13 @@ data:
           "source" => "fofa"
         }
         remove_field => ["message", "path"]
+      }
+
+      mutate {
+        gsub => [
+          "host", "https?://", "",
+          "host", ":[\d]+", ""
+        ]
       }
     }
     output {
