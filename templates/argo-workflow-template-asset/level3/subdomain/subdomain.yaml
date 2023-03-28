@@ -34,3 +34,33 @@ spec:
                 - name: get-subdomain-way
                   value: {{`"{{inputs.parameters.get-subdomain-way}}"`}}
             withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}
+
+    - name: 输入域名列表-获取子域名-保存结果
+      inputs:
+        parameters:
+          - name: domains
+            description: "域名列表"
+          - name: get-subdomain-way
+            description: "哪种方式扫描子域名 subfinder,oneforall,es,mysql"
+            default: "subfinder,es"
+      parallelism: 6   # todo:config
+      steps:
+        - - name: generate-domain-list
+            arguments:
+              parameters:
+                - name: lines
+                  value: {{`"{{inputs.parameters.domains}}"`}}
+            templateRef:
+              name: util-user-input
+              template: convert-lines-to-list
+        - - name: call-get-subdomains-save
+            templateRef:
+              name: probe-asset-level2-subdomain
+              template: get-subdomains-save
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{item}}'`}}
+                - name: get-subdomain-way
+                  value: {{`"{{inputs.parameters.get-subdomain-way}}"`}}
+            withParam: {{`'{{steps.generate-domain-list.outputs.result}}'`}}

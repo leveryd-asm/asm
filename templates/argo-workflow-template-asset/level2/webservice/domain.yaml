@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: level2-probe-web-service
+  name: probe-asset-level2-web-service
 spec:
   arguments:
     parameters:
@@ -34,6 +34,28 @@ spec:
                 - name: hosts
                   raw:
                     data: {{`'{{inputs.parameters.hosts}}'`}}
+              parameters:
+                - name: port-range
+                  value: {{`'{{inputs.parameters.port-range}}'`}}
+            template: from-host-file
+
+    - name: from-host-file
+      retryStrategy:      # because '-ec' options maybe fail
+        limit: "2"
+        retryPolicy: "Always"
+      inputs:
+        artifacts:
+          - name: hosts
+            description: "domains or ips, eg www.apple.com<br>www.google.com<br>www.microsoft.com"
+        parameters:
+          - name: port-range
+            value: "8000-9000"
+      steps:
+        - - name: call-port-scan
+            arguments:
+              artifacts:
+                - name: hosts
+                  from: {{`'{{inputs.artifacts.hosts}}'`}}
               parameters:
                 - name: port-range
                   value: {{`'{{inputs.parameters.port-range}}'`}}

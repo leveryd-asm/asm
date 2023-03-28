@@ -47,6 +47,6 @@ spec:
                 - name: port-range
                   value: {{`'{{inputs.parameters.port-range}}'`}}
             templateRef:
-              name: level2-probe-web-service
+              name: probe-asset-level2-web-service
               template: 获取子域名-端口扫描-存储结果
             withParam: {{`'{{steps.call-getrootdomain-from-console-api.outputs.result}}'`}}

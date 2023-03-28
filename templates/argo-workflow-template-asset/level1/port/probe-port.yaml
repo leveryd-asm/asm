@@ -62,7 +62,7 @@ spec:
         command:
           - 'sh'
         source: |
-          if [ "{{`{{workflow.parameters.passive}}`}}"="true" ]
+          if [ "{{`{{workflow.parameters.passive}}`}}" = "true" ]
           then
             naabu -l /tmp/hosts -r 114.114.114.114,8.8.8.8 -ec -passive -json -o /tmp/result # 使用passive时-p参数、-stats无效
           else

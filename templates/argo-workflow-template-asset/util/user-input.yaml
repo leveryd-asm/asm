@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: util-user-input
+spec:
+  templates:
+    - name: convert-lines-to-list
+      inputs:
+        parameters:
+          - name: lines
+            description: "lines \n separated"
+      outputs:
+        artifacts:
+          - name: result
+            path: /tmp/result.txt
+      script:
+        image: python:3.8
+        command:
+          - python
+        source: |
+          import json
+          user_input = """{{`{{inputs.parameters.lines}}`}}"""
+          user_intput_list = user_input.splitlines()
+
+          with open("/tmp/result.txt", "w") as f:
+              f.write(json.dumps(user_intput_list))
+          print(json.dumps(user_intput_list))

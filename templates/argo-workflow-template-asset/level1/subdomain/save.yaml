@@ -8,14 +8,56 @@ spec:
       inputs:
         artifacts:
           - name: subdomains
+        parameters:
+          - name: domain
+            description: 'parent domain, eg apple.com'
+      steps:
+        - - name: console
+            arguments:
+              artifacts:
+                - name: subdomains
+                  from: {{`"{{inputs.artifacts.subdomains}}"`}}
+              parameters:
+                - name: domain
+                  value: {{`"{{inputs.parameters.domain}}"`}}
+            template: x-console
+        - - name: elasticsearch
+            arguments:
+              artifacts:
+                - name: subdomains
+                  from: {{`"{{inputs.artifacts.subdomains}}"`}}
+            template: x-es
+
+    - name: x-es
+      volumes:
+        - name: logstash-config-subdomain
+          configMap:
+              name: logstash-config-subdomain
+      inputs:
+        artifacts:
+          - name: subdomains
+            path: /tmp/subdomains.txt
+      script:
+        image: logstash:7.17.3
+        command:
+          - 'sh'
+        source: |
+          logstash -f /tmp/logstash/subdomain.conf
+        volumeMounts:
+          - name: logstash-config-subdomain
+            mountPath: /tmp/logstash
+
+    - name: x-console
+      inputs:
+        artifacts:
+          - name: subdomains
             path: /tmp/subdomains
         parameters:
           - name: domain
             description: 'parent domain, eg apple.com'
-      container:
+      script:
         image: 'leveryd/x-tool:v2023.1.16'
         command:
           - 'sh'
-        args:
-          - '-c'
-          - 'x subdomain -action save  -source console -domain {{`{{inputs.parameters.domain}}`}} -if /tmp/subdomains -consoleUrl http://{{.Values.console_api_service_name}}:{{.Values.console_api_service_port}}'
+        source: |
+          x subdomain -action save  -source console -domain {{`{{inputs.parameters.domain}}`}} -if /tmp/subdomains -consoleUrl http://{{.Values.console_api_service_name}}:{{.Values.console_api_service_port}}
