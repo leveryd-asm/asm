@@ -10,6 +10,10 @@ spec:
     entrypoint: update-nuclei-template
     workflowTemplateRef:
       name: util-update-nuclei-template
+    arguments:
+      parameters:
+        - name: force-update
+          value: false
   podGC:
     strategy: OnPodCompletion
   ttlStrategy:

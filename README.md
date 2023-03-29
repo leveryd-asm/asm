@@ -1,3 +1,7 @@
+<blockquote>
+<p dir="auto">中文 | <a href="README_ENG.md">English</a></p>
+</blockquote>
+
 本项目致力于成为一个面向企业的外网攻击面管理产品，企业可以用它来发现自己暴露在互联网的资产、感知资产存在的安全漏洞并运营漏洞。
 
 使用说明见 [文档](https://leveryd-asm.github.io/asm-document/#/) 。因为担心被人拿来做恶意扫描，所以有需要的可以联系我微信`happy_leveryd`获取demo环境地址。

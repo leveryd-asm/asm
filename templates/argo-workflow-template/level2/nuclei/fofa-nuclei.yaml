@@ -15,7 +15,7 @@ spec:
         description: "fofa query, do not use single quotes"
         default: 'host=".apple.com"'
       - name: size
-        default: 10
+        default: 10000
         description: "number of results to return"
   templates:
     - name: fofa查询获取url列表-nuclei扫描-保存结果 # fofa获取的host可能有误报

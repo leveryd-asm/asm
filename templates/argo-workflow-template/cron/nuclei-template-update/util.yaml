@@ -24,7 +24,7 @@ spec:
           cd /root/nuclei-templates
           nuclei --target 127.0.0.1 -id CVE-2021-44228 -debug -ut
 
-          if [ "{{`{{workflow.parameters.force-update}}`}}" = "true" ]
+          if [ "{{`{{inputs.parameters.force-update}}`}}" = "true" ]
           then
             wget -c https://github.com/projectdiscovery/fuzzing-templates/archive/refs/tags/v0.0.2.zip -O /root/nuclei-templates/main.zip
             unzip /root/nuclei-templates/main.zip -d /root/nuclei-templates/
