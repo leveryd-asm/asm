@@ -49,7 +49,12 @@ data:
             ctx._source.first_create_time = params.event.get('timestamp');
           } else {
             String old = ctx._source.get('first_create_time');
-            ctx._source = params.event;
+
+            for (entry in params.event.entrySet()) {
+              ctx._source[entry.getKey()] = entry.getValue()
+            }
+            //ctx._source = params.event;
+
             ctx._source.last_update_time = params.event.get('timestamp');
             ctx._source.first_create_time = old;
           }
@@ -105,7 +110,12 @@ data:
               ctx._source.first_create_time = params.event.get('timestamp');
             } else {
               String old = ctx._source.get('first_create_time');
-              ctx._source = params.event;
+
+              for (entry in params.event.entrySet()) {
+                ctx._source[entry.getKey()] = entry.getValue()
+              }
+              //ctx._source = params.event;
+
               ctx._source.last_update_time = params.event.get('timestamp');
               ctx._source.first_create_time = old;
             }
@@ -148,7 +158,12 @@ data:
             ctx._source.first_create_time = params.event.get('timestamp');
           } else {
             String old = ctx._source.get('first_create_time');
-            ctx._source = params.event;
+
+            for (entry in params.event.entrySet()) {
+              ctx._source[entry.getKey()] = entry.getValue()
+            }
+            //ctx._source = params.event;
+
             ctx._source.last_update_time = params.event.get('timestamp');
             ctx._source.first_create_time = old;
           }
@@ -201,7 +216,12 @@ data:
             ctx._source.first_create_time = params.event.tmp_field.get('timestamp');
           } else {
             String old = ctx._source.get('first_create_time');
-            ctx._source = params.event.tmp_field;
+
+            for (entry in params.event.entrySet()) {
+              ctx._source[entry.getKey()] = entry.getValue()
+            }
+            //ctx._source = params.event;
+
             ctx._source.last_update_time = params.event.tmp_field.get('timestamp');
             ctx._source.first_create_time = old;
           }
@@ -259,7 +279,12 @@ data:
             ctx._source.first_create_time = params.event.get('@timestamp');
           } else {
             String old = ctx._source.get('first_create_time');
-            ctx._source = params.event;
+
+            for (entry in params.event.entrySet()) {
+              ctx._source[entry.getKey()] = entry.getValue()
+            }
+            //ctx._source = params.event;
+
             ctx._source.last_update_time = params.event.get('@timestamp');
             ctx._source.first_create_time = old;
           }
