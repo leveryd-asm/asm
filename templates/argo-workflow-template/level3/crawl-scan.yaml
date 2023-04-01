@@ -29,7 +29,7 @@ spec:
                 - name: query
                   value: {{`"{{inputs.parameters.query}}"`}}
             templateRef:
-              name: level1-getrootdomain
+              name: get-asset-level1-sld-domain-from-console
               template: from-console-api
         - - name: call-katana-scanner-save
             arguments:
@@ -82,7 +82,7 @@ spec:
                 - name: sql
                   value: {{`"{{inputs.parameters.sql}}"`}}
             templateRef:
-              name: level1-getrootdomain
+              name: get-asset-level1-sld-domain-from-console
               template: from-db
         - - name: call-katana-scanner-save
             arguments:
@@ -128,7 +128,7 @@ spec:
                 - name: query
                   value: {{`"{{inputs.parameters.query}}"`}}
             templateRef:
-              name: level1-getrootdomain
+              name: get-asset-level1-sld-domain-from-console
               template: from-console-api
         - - name: call-katana-scanner-save
             arguments:

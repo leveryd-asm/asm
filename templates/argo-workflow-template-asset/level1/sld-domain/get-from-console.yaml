@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: level1-getrootdomain
+  name: get-asset-level1-sld-domain-from-console
 spec:
   templates:
     - name: from-console-api
