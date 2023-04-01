@@ -14,8 +14,9 @@ spec:
         command:
           - 'sh'
         source: |
-          logstash -f /tmp/logstash/update-parsed-domain-field.conf --api.enabled false -w 1
-          logstash -f /tmp/logstash/update-org-asset-map.conf --api.enabled false -w 1
+          # https://www.elastic.co/guide/en/logstash/current/running-logstash-command-line.html
+          logstash --log.level error -f /tmp/logstash/update-parsed-domain-field.conf --api.enabled false -w 1
+          logstash --log.level error -f /tmp/logstash/update-org-asset-map.conf --api.enabled false -w 1
         volumeMounts:
           - name: logstash-config-update-org-asset-map
             mountPath: /tmp/logstash

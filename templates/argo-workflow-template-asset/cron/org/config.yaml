@@ -9,6 +9,7 @@ data:
         url => "http://elasticsearch-master:9200/subdomain,port,web-service/_update_by_query"
         verb => "POST"
         body_format => "json"
+        socket_timeout => 60
         body => {
           "query" => {
             "bool" => {
@@ -40,6 +41,7 @@ data:
         url => "http://elasticsearch-master:9200/%{index}/_update_by_query"
         verb => "POST"
         body_format => "json"
+        socket_timeout => 60
         body => {
           "script" => {
             "lang" => "painless"
@@ -81,11 +83,6 @@ data:
       }
     }
 
-    output {
-      stdout {
-        codec => rubydebug
-      }
-    }
   org.txt: |
     { "org": "百度", "query": "subject_org:baidu OR subject_org:百度", "index": "tls" }
     { "org": "百度", "query": "title:baidu OR title:百度", "index": "web-service" }
