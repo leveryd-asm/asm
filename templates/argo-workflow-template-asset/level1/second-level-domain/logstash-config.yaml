@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config-sld
+data:
+  sld.conf: |
+    input {
+      # Read all documents from Elasticsearch matching the given query
+      elasticsearch {
+        hosts => "elasticsearch-master:9200"
+        index => "subdomain"
+        query => '{
+          "_source": "parsed-domain.registered_domain",
+          "query": {
+            "query_string": {
+              "query": "org:${ORG}"
+            }
+          }
+        }'
+      }
+    }
+
+    output {
+      file {
+          path => "/tmp/host.txt"
+          codec => line {
+            format => "%{[parsed-domain][registered_domain]}"
+          }
+      }
+    }

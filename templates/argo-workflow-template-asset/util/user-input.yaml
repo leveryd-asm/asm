@@ -25,3 +25,27 @@ spec:
           with open("/tmp/result.txt", "w") as f:
               f.write(json.dumps(user_intput_list))
           print(json.dumps(user_intput_list))
+
+    - name: convert-file-to-list
+      inputs:
+        artifacts:
+          - name: file
+            path: /tmp/input.txt
+      outputs:
+        artifacts:
+          - name: result
+            path: /tmp/result.txt
+      script:
+        image: python:3.8
+        command:
+          - python
+        source: |
+          import json
+          user_intput_list = []
+          with open("/tmp/input.txt", "r") as f:
+              for line in f:
+                  user_intput_list.append(line.strip())
+
+          with open("/tmp/result.txt", "w") as f:
+              f.write(json.dumps(user_intput_list))
+          print(json.dumps(user_intput_list))

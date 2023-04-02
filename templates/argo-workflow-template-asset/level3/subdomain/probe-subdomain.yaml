@@ -64,3 +64,41 @@ spec:
                 - name: get-subdomain-way
                   value: {{`"{{inputs.parameters.get-subdomain-way}}"`}}
             withParam: {{`'{{steps.generate-domain-list.outputs.result}}'`}}
+
+    - name: 获取组织的二级域名-获取子域名-保存结果
+      inputs:
+        parameters:
+          - name: org
+            description: "组织名"
+          - name: get-subdomain-way
+            description: "哪种方式扫描子域名 subfinder,oneforall,es,mysql"
+            default: "subfinder,es"
+      parallelism: 3
+      steps:
+        - - name: call-get-sld
+            arguments:
+              parameters:
+                - name: org
+                  value: {{`"{{inputs.parameters.org}}"`}}
+            templateRef:
+              name: get-asset-level1-sld-domain-from-es
+              template: from-es
+        - - name: convert-file-to-list
+            arguments:
+              artifacts:
+                - name: file
+                  from: {{`'{{steps.call-get-sld.outputs.artifacts.result}}'`}}
+            templateRef:
+              name: util-user-input
+              template: convert-file-to-list
+        - - name: call-get-subdomains-save
+            templateRef:
+              name: probe-asset-level2-subdomain
+              template: get-subdomains-save
+            arguments:
+              parameters:
+                - name: domain
+                  value: {{`'{{item}}'`}}
+                - name: get-subdomain-way
+                  value: {{`"{{inputs.parameters.get-subdomain-way}}"`}}
+            withParam: {{`'{{steps.convert-file-to-list.outputs.result}}'`}}
