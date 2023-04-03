@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: cron-probe-subdomain-org
+spec:
+  schedule: "0 */1 * * *"  # run every hour
+  suspend: false
+  workflowSpec:
+    workflowTemplateRef:
+      name: probe-asset-level3-subdomain
+    arguments:
+      parameters:
+        - name: org
+          value: '*'
+        - name: get-subdomain-way
+          value: "subfinder"
+    entrypoint: 获取组织的二级域名-获取子域名-保存结果
