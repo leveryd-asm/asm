@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: cron-probe-web-service-org
+spec:
+  schedule: "0 */1 * * *"   # run every hour
+  suspend: false
+  workflowSpec:
+    workflowTemplateRef:
+      name: probe-asset-level2-web-service-from-es-subdomain
+    arguments:
+      parameters:
+        - name: q
+          description: 'elasticsearch query, e.g. "*"'
+          value: "org:* AND first_create_time:[now-1h TO now]"
+        - name: index
+          value: "subdomain"
+        - name: size
+          value: "10000000"
+        - name: source
+          description: field to return
+          value: "host"
+        - name: format_source
+          description: logstash field reference format, eg "[asn][as-range]"
+          value: "[host]"
+        - name: passive
+          description: "passive mode when get port (default: false)"
+          value: "false"
+          enum:
+            - "true"
+            - "false"
+        - name: port-range
+          value: "80,443,8000-9000"
+    entrypoint: 根据查询获取主机端口信息-收集首页信息-存储结果

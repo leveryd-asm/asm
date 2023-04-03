@@ -1,0 +1,61 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: probe-asset-level1-subdomain-from-response
+spec:
+  entrypoint: probe-subdomain-from-response
+  arguments:
+    parameters:
+      - name: q
+        description: 'elasticsearch query, e.g. "*"'
+        value: "*"
+      - name: index
+        value: "proxify"
+      - name: size
+        value: "10000000"
+      - name: source
+        description: field to return
+        value: "response"
+      - name: format_source
+        description: logstash field reference format, eg "[asn][as-range]"
+        value: "[response]"
+  templates:
+    - name: probe-subdomain-from-response
+      steps:
+        - - name: get-response
+            templateRef:
+              name: util-asset-es-query
+              template: query-es
+        - - name: get-info
+            arguments:
+              artifacts:
+                - name: response
+                  from: {{`"{{steps.get-response.outputs.artifacts.result}}"`}}
+            template: x-find-info
+        - - name: save-subdomains
+            templateRef:
+              name: level1-save-subdomains
+              template: save-subdomains
+            arguments:
+              parameters:
+                - name: domain
+                  value: ""
+              artifacts:
+                - name: subdomains
+                  from: {{`'{{steps.get-info.outputs.artifacts.subdomain}}'`}}
+
+    - name: x-find-info
+      inputs:
+        artifacts:
+          - name: response
+            path: /tmp/response.txt
+      outputs:
+        artifacts:
+          - name: subdomain
+            path: /output/subdomain.txt
+      script:
+        image: 'leveryd/x-tool:v2023.1.16'
+        command:
+          - sh
+        source: |
+          x txt -d /tmp/ -od /output

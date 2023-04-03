@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: cron-probe-subdomain-from-response
+spec:
+  schedule: "*/10 * * * *"
+  suspend: false
+  workflowSpec:
+    workflowTemplateRef:
+      name: probe-asset-level1-subdomain-from-response
+    arguments:
+      parameters:
+        - name: q
+          value: "timestamp:\\[now-11m%20TO%20now\\]"
+    entrypoint: probe-subdomain-from-response

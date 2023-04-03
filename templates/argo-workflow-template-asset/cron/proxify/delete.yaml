@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: cron-delete-proxify-index
+spec:
+  schedule: "0 */1 * * *"  # run every hour
+  suspend: false
+  workflowSpec:
+    workflowTemplateRef:
+      name: x-util-delete-proxify-index
+    arguments:
+      parameters:
+        - name: q
+          value: "timestamp:\\[now-1h%20TO%20now\\]"
+    entrypoint: x-util-delete-proxify-index
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: x-util-delete-proxify-index
+spec:
+  templates:
+    - name: x-util-delete-proxify-index
+      inputs:
+        parameters:
+          - name: q
+            default: "*"
+      script:
+        image: alpine/curl:3.14
+        command: [sh]
+        source: |
+          curl -X POST "{{.Values.kibana.elasticsearchHosts}}/proxify/_delete_by_query?q={{`{{inputs.parameters.q}}`}}"

@@ -9,7 +9,7 @@ spec:
       inputs:
         parameters:
           - name: q
-            description: 'elasticsearch query from web-service index, e.g. "*"'
+            description: 'elasticsearch query from web-service index, e.g. "*". escape double quote with backslash'
             default: "*"
       steps:
         - - name: call-url-from-es
