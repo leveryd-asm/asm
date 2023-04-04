@@ -9,13 +9,39 @@ spec:
         name: logstash-config-update-org-asset-map
   templates:
     - name: update-org-asset-map
+      steps:
+        - - name: update-parsed-domain
+            template: x-update-parsed-domain
+        - - name: update-org-asset-map
+            template: x-update-org-asset-map
+
+    - name: x-update-parsed-domain
+      script:
+        image: alpine/curl:3.14
+        command:
+          - 'sh'
+        source: |
+          curl -s -X POST "{{.Values.kibana.elasticsearchHosts}}/subdomain,port,web-service/_update_by_query" -H 'Content-Type: application/json' -d '
+          {
+            "query": {
+              "bool": {
+                "must_not": {
+                  "exists": {
+                    "field": "parsed-domain.registered_domain"
+                  }
+                }
+              }
+            }
+          }
+          '
+
+    - name: x-update-org-asset-map
       script:
         image: logstash:7.17.3
         command:
           - 'sh'
         source: |
           # https://www.elastic.co/guide/en/logstash/current/running-logstash-command-line.html
-          logstash --log.level error -f /tmp/logstash/update-parsed-domain-field.conf --api.enabled false -w 1
           logstash --log.level error -f /tmp/logstash/update-org-asset-map.conf --api.enabled false -w 1
         volumeMounts:
           - name: logstash-config-update-org-asset-map
@@ -26,8 +52,7 @@ kind: CronWorkflow
 metadata:
   name: cron-update-org-asset-map
 spec:
-  # run every 12 hours
-  schedule: "0 */12 * * *"
+  schedule: "*/30 * * * *"
   suspend: false
   workflowSpec:
     workflowTemplateRef:
