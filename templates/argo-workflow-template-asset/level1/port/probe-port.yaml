@@ -44,7 +44,7 @@ spec:
 
     - name: port-scan-no-save
       retryStrategy: # because '-ec' options maybe fail
-        limit: "3"
+        limit: "2"
         retryPolicy: "Always"
       inputs:
         artifacts:
@@ -62,6 +62,13 @@ spec:
         command:
           - 'sh'
         source: |
+          num=`wc -l /tmp/hosts | awk '{print $1}'`
+          if [ "$num" = "0" ]; then
+            echo "no hosts"
+            touch /tmp/result
+            exit 0
+          fi
+
           if [ "{{`{{workflow.parameters.passive}}`}}" = "true" ]
           then
             naabu -l /tmp/hosts -r 114.114.114.114,8.8.8.8 -ec -passive -json -o /tmp/result # 使用passive时-p参数、-stats无效
