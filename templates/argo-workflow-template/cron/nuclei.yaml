@@ -1,39 +1,15 @@
 apiVersion: argoproj.io/v1alpha1
 kind: CronWorkflow
 metadata:
-  name: cron-nuclei-scan-no-storage    # 子域名信息不入库，只扫描80/443端口
+  name: cron-nuclei-scan-org
 spec:
-  # run everyd two hour
-  schedule: "0 */2 * * *"
-  suspend: true
-  workflowSpec:
-    workflowTemplateRef:
-      name: level3-nuclei
-    arguments:
-      parameters:
-        - name: domain-list
-          value: '["xxx.com", "yyy.com"]'
-        - name: get-subdomain-way
-          description: "哪种方式扫描子域名 subfinder,oneforall,es,mysql"
-          default: "subfinder,es,mysql"
-        - name: save-subdomain-result
-          default: "false"
-          enum: [ "true", "false" ]
-    entrypoint: 输入域名列表-获取子域名-nuclei扫描-保存结果
----
-apiVersion: argoproj.io/v1alpha1
-kind: CronWorkflow
-metadata:
-  name: cron-nuclei
-spec:
-  schedule: "0 0 */1 * *"
+  schedule: "*/20 * * * *"
   suspend: false
-  concurrencyPolicy: Forbid  # do not allow any new while there are old
   workflowSpec:
     workflowTemplateRef:
-      name: level3-nuclei
+      name: level2-es-nuclei
     arguments:
       parameters:
-        - name: query
-          value: 'limit=10000&offset=0&accurate=是'
-    entrypoint: 从API获取兄弟域名-从ES获取web服务-nuclei扫描-保存结果
+        - name: q
+          value: 'first_create_time:[now-22m TO now] AND org:*'
+    entrypoint: es查询webservice获取url列表-nuclei扫描-保存结果

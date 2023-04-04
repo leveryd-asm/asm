@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: cron-probe-tls-new
+spec:
+  schedule: "0 */1 * * *"
+  suspend: false
+  workflowSpec:
+    workflowTemplateRef:
+      name: level2-probe-tls
+    arguments:
+      parameters:
+        - name: q
+          value: 'first_create_time:[now-1h TO now] AND scheme:https'
+    entrypoint: url-from-es
+---
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: cron-probe-tls-all
+spec:
+  schedule: "0 0 */3 * *"
+  suspend: false
+  workflowSpec:
+    workflowTemplateRef:
+      name: level2-probe-tls
+    arguments:
+      parameters:
+        - name: q
+          value: "scheme:https"
+    entrypoint: url-from-es
