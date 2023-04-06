@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: CronWorkflow
 metadata:
-  name: cron-crawl-scan-org
+  name: cron-crawl-scan-new-org
 spec:
   schedule: "0 */1 * * *"
   suspend: false
@@ -11,5 +11,21 @@ spec:
     arguments:
       parameters:
         - name: q
-          value: 'first_create_time:[now-1h TO now] AND org:*'
+          value: "first_create_time:[now-1h TO now] AND status-code:200 AND content-type:'html' AND words:>10 AND org:*"
+    entrypoint: 获取web服务-katana爬虫-xray扫描-保存结果
+---
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: cron-crawl-scan-org-all
+spec:
+  schedule: "0 0 */3 * *"
+  suspend: false
+  workflowSpec:
+    workflowTemplateRef:
+      name: level2-es-katana
+    arguments:
+      parameters:
+        - name: q
+          value: "status-code:200 AND content-type:'html' AND words:>10"
     entrypoint: 获取web服务-katana爬虫-xray扫描-保存结果
