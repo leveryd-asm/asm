@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: CronWorkflow
 metadata:
-  name: cron-nuclei-scan-org
+  name: cron-nuclei-scan-org-new
 spec:
   schedule: "*/20 * * * *"
   suspend: false
@@ -12,4 +12,20 @@ spec:
       parameters:
         - name: q
           value: 'first_create_time:[now-22m TO now] AND org:*'
+    entrypoint: es查询webservice获取url列表-nuclei扫描-保存结果
+---
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: cron-nuclei-scan-org-all
+spec:
+  schedule: "* * */7 * *"
+  suspend: false
+  workflowSpec:
+    workflowTemplateRef:
+      name: level2-es-nuclei
+    arguments:
+      parameters:
+        - name: q
+          value: 'org:*'
     entrypoint: es查询webservice获取url列表-nuclei扫描-保存结果

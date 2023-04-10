@@ -27,5 +27,5 @@ spec:
     arguments:
       parameters:
         - name: q
-          value: "status-code:200 AND content-type:'html' AND words:>10"
+          value: "status-code:200 AND content-type:'html' AND words:>10 AND org:*"
     entrypoint: 获取web服务-katana爬虫-xray扫描-保存结果
