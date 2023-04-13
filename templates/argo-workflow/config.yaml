@@ -72,7 +72,7 @@ data:
       url: http://logging-facility?namespace=${metadata.namespace}&workflowName=${metadata.name}&startedAt=${status.startedAt}&finishedAt=${status.finishedAt}
     - name: Pod Link
       scope: pod
-      url: http://logging-facility?namespace=${metadata.namespace}&podName=${metadata.name}&startedAt=${status.startedAt}&finishedAt=${status.finishedAt}
+      url: http://{{.Values.console_domain}}:30880/terminal/cluster/default/projects/${metadata.namespace}/pods/${metadata.name}/containers/main
     - name: Pod Logs Link
       scope: pod-logs
       url: http://logging-facility?namespace=${metadata.namespace}&podName=${metadata.name}&startedAt=${status.startedAt}&finishedAt=${status.finishedAt}
