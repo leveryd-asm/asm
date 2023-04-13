@@ -53,6 +53,8 @@ spec:
         artifacts:
           - name: subdomain
             path: /output/subdomain.txt
+          - name: sld
+            path: /output/tldDomain.txt
       script:
         image: 'leveryd/x-tool:v2023.1.16'
         command:

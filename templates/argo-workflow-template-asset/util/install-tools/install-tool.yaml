@@ -6,17 +6,39 @@ spec:
   entrypoint: install-tool
   templates:
     - name: install-tool
+      inputs:
+        parameters:
+          - name: tool-name
+            description: "tools to install, eg 'fofax,enscan'"
+            default: "fofax,enscan"
       script:
         image: busybox:glibc
         command:
           - 'sh'
         source: |
+          result=$(echo {{`{{inputs.parameters.tool-name}}`}} | grep "fofax")
+          if [[ "$result" != "" ]]
+          then
+            wget https://github.com/xiecat/fofax/releases/download/v0.1.42/fofax_v0.1.42_linux_amd64.tar.gz
+            mkdir -p /tmp/tools/fofax
+            tar -xvf fofax_v0.1.42_linux_amd64.tar.gz -C /tmp/tools/fofax
+            rm fofax_v0.1.42_linux_amd64.tar.gz
+            ls -al /tmp/tools/fofax
+          else
+            echo "ignore install fofax"
+          fi
 
-          wget https://github.com/xiecat/fofax/releases/download/v0.1.42/fofax_v0.1.42_linux_amd64.tar.gz
-          mkdir -p /tmp/tools/fofax
-          tar -xvf fofax_v0.1.42_linux_amd64.tar.gz -C /tmp/tools/fofax
-          rm fofax_v0.1.42_linux_amd64.tar.gz
-          ls -al /tmp/tools/fofax
+          result=$(echo {{`{{inputs.parameters.tool-name}}`}} | grep "enscan")
+          if [[ "$result" != "" ]]
+          then
+            wget https://github.com/wgpsec/ENScan_GO/releases/download/0.0.10/enscan-0.0.10-linux-amd64.tar.gz
+            mkdir -p /tmp/tools/enscan
+            tar -xvf enscan-0.0.10-linux-amd64.tar.gz -C /tmp/tools/enscan
+            rm enscan-0.0.10-linux-amd64.tar.gz
+            ls -al /tmp/tools/enscan
+          else
+            echo "ignore install enscan"
+          fi
 
         volumeMounts:
           - name: tools

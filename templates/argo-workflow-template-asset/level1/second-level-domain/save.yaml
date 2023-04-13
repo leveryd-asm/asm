@@ -1,0 +1,74 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: probe-asset-level1-sld-from-text
+spec:
+  templates:
+    - name: manual-add-sld
+      steps:
+        - - name: approve
+            template: x-approve
+        - - name: add-sld
+            template: save
+            arguments:
+              parameters:
+                - name: org
+                  value: "{{`{{steps.approve.outputs.parameters.org}}`}}"
+              artifacts:
+                - name: sld
+                  raw:
+                    data: "{{`{{steps.approve.outputs.parameters.sld}}`}}"
+            when: "{{`{{steps.approve.outputs.parameters.approve}}`}} == YES"
+
+    - name: x-approve
+      suspend: {}
+      inputs:
+        parameters:
+          - name: approve
+            default: 'NO'
+            enum:
+              - 'YES'
+              - 'NO'
+          - name: org
+            default: ""
+          - name: sld
+            default: ""
+      outputs:
+        parameters:
+          - name: approve
+            valueFrom:
+              supplied: {}
+          - name: org
+            valueFrom:
+              supplied: {}
+          - name: sld
+            valueFrom:
+              supplied: {}
+
+    - name: save
+      volumes:
+        - name: logstash-config-sld
+          configMap:
+            name: logstash-config-sld
+      inputs:
+        parameters:
+          - name: org
+          - name: source
+            default: ""
+        artifacts:
+          - name: sld
+            path: /tmp/sld.txt
+      script:
+        image: logstash:7.17.3
+        command:
+          - sh
+        env:
+          - name: ORG
+            value: {{`"{{inputs.parameters.org}}"`}}
+          - name: SOURCE
+            value: {{`"{{inputs.parameters.source}}"`}}
+        source: |
+          logstash --api.enabled false -w 1 --log.level error -f /tmp/logstash/save.conf
+        volumeMounts:
+          - name: logstash-config-sld
+            mountPath: /tmp/logstash

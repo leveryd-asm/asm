@@ -1,0 +1,80 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: probe-asset-level1-sld-from-org
+spec:
+  templates:
+    - name: enscan
+      inputs:
+        parameters:
+          - name: keyword
+            description: "enscan工具支持pid或者关键字列表"
+          - name: extra_args
+            description: "eg --is-pid"
+            default: ""
+      steps:
+        - - name: enscan
+            arguments:
+              parameters:
+                - name: keyword
+                  value: {{`"{{inputs.parameters.keyword}}"`}}
+                - name: extra_args
+                  value: {{`"{{inputs.parameters.extra_args}}"`}}
+            template: x-enscan
+        - - name: save
+            arguments:
+              artifacts:
+                - name: result
+                  from: {{`"{{steps.enscan.outputs.artifacts.result}}"`}}
+            template: x-save
+    - name: x-enscan
+      inputs:
+        parameters:
+          - name: keyword
+          - name: extra_args
+            default: ""
+      outputs:
+        artifacts:
+          - name: result
+            path: /tmp/outs
+      script:
+        image: docker/whalesay:latest
+        command: [ "bash" ]
+        source: |
+          cp /tmp/tools/enscan/enscan-0.0.10-linux-amd64 /bin/enscan
+          enscan -v
+
+          cat <<< '
+          {{`{{inputs.parameters.keyword}}`}}
+          ' > /tmp/query.txt
+
+          enscan -field icp -f /tmp/query.txt -json -o /tmp/outs/ -no-merge {{`{{inputs.parameters.extra_args}}`}}
+        volumeMounts:
+          - name: tools
+            mountPath: /tmp/tools
+      volumes:
+        - name: tools
+          persistentVolumeClaim:
+            claimName: tools
+
+    - name: x-save
+      volumes:
+        - name: logstash-config-sld
+          configMap:
+            name: logstash-config-sld
+      inputs:
+        artifacts:
+          - name: result
+            path: /tmp/outs
+      outputs:
+        artifacts:
+          - name: sld
+            path: /tmp/sld
+      script:
+        image: logstash:7.17.3
+        command: ["sh"]
+        source: |
+          logstash --api.enabled false -w 1 --log.level error -f /tmp/logstash/save-enscan.conf
+        volumeMounts:
+          - name: logstash-config-sld
+            mountPath: /tmp/logstash
