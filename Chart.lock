@@ -4,12 +4,12 @@ dependencies:
   version: 20.0.2
 - name: argo-workflows
   repository: https://argoproj.github.io/argo-helm
-  version: 0.22.4
+  version: 0.22.16
 - name: elasticsearch
   repository: https://helm.elastic.co
   version: 7.17.3
 - name: kibana
   repository: https://helm.elastic.co
   version: 7.17.3
-digest: sha256:2f44e15511fcccfc2769baeab4a60f17560c9d616d1d5891ef9507de064cb98a
-generated: "2023-01-19T14:24:52.26649+08:00"
+digest: sha256:3e8e21510dc1bdfa7bd9580ea85b5bdeee909d130484001adbbd1e6fcb06080e
+generated: "2023-04-13T14:37:57.4786+08:00"

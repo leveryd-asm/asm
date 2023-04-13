@@ -28,7 +28,7 @@ dependencies:
     version: "20.0.2"
     repository: "https://charts.bitnami.com/bitnami"
   - name: argo-workflows
-    version: "0.22.4"
+    version: "0.22.16"
     repository: "https://argoproj.github.io/argo-helm"
   - name: elasticsearch
     version: 7.17.3
