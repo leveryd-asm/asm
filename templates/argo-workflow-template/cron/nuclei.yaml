@@ -19,7 +19,7 @@ kind: CronWorkflow
 metadata:
   name: cron-nuclei-scan-org-all
 spec:
-  schedule: "* * */7 * *"
+  schedule: "0 0 */7 * *"
   suspend: false
   workflowSpec:
     workflowTemplateRef:
