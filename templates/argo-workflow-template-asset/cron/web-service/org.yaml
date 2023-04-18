@@ -12,7 +12,7 @@ spec:
       parameters:
         - name: q
           description: 'elasticsearch query, e.g. "*"'
-          value: "org:* AND first_create_time:[now-1h TO now]"
+          value: "org:* AND first_create_time:[now-1h TO now]  AND NOT enable:0"
         - name: index
           value: "subdomain"
         - name: size

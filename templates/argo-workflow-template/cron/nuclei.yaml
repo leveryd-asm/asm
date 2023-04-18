@@ -11,7 +11,7 @@ spec:
     arguments:
       parameters:
         - name: q
-          value: 'first_create_time:[now-22m TO now] AND org:*'
+          value: 'first_create_time:[now-22m TO now] AND org:* AND NOT enable:0'
     entrypoint: es查询webservice获取url列表-nuclei扫描-保存结果
 ---
 apiVersion: argoproj.io/v1alpha1
@@ -27,5 +27,5 @@ spec:
     arguments:
       parameters:
         - name: q
-          value: 'org:*'
+          value: 'org:* AND NOT enable:0'
     entrypoint: es查询webservice获取url列表-nuclei扫描-保存结果

@@ -27,5 +27,5 @@ spec:
     arguments:
       parameters:
         - name: q
-          value: "scheme:https"
+          value: "scheme:https AND NOT enable:0"
     entrypoint: url-from-es

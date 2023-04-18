@@ -11,7 +11,7 @@ spec:
     arguments:
       parameters:
         - name: org
-          value: '*'
+          value: '* AND NOT enable:0'
         - name: get-subdomain-way
           value: "subfinder"
     entrypoint: 获取组织的二级域名-获取子域名-保存结果

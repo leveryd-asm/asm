@@ -34,14 +34,34 @@ spec:
           curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/subdomain"
           curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/port"
           curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/proxify"
+          curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/tls"
+          curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/web-service"
+          curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/sld"
 
           echo "Setting default pipeline"
 
           # set the "subdomain-parse-domain" pipeline as default pipeline
-          curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/subdomain,port/_settings" -H 'Content-Type: application/json' -d '
+          curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/subdomain,port,tls,sld/_settings" -H 'Content-Type: application/json' -d '
           {
             "index": {
               "default_pipeline": "subdomain-parse-domain"
             }
           }
           '
+
+{{/*          # set mapping*/}}
+{{/*          '*/}}
+{{/*          {*/}}
+{{/*            "properties": {*/}}
+{{/*              "request": {*/}}
+{{/*                "type": "keyword"*/}}
+{{/*              },*/}}
+{{/*              "response": {*/}}
+{{/*                "type": "keyword"*/}}
+{{/*              },*/}}
+{{/*              "timestamp": {*/}}
+{{/*                "type": "date"*/}}
+{{/*              }*/}}
+{{/*            }*/}}
+{{/*          }*/}}
+{{/*          '*/}}

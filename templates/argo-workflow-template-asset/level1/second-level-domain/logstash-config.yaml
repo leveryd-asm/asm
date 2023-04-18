@@ -48,6 +48,7 @@ data:
       mutate {
         add_field => { "source" => "${SOURCE}" }
         add_field => { "org" => ["${ORG}"] }
+        add_field => { "host" => "%{sld}" }
         remove_field => ["host", "path", "message"]
       }
     }
