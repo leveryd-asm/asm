@@ -5,6 +5,7 @@ metadata:
 spec:
   schedule: "0 */1 * * *"  # run every hour
   suspend: false
+  concurrencyPolicy: Forbid
   workflowSpec:
     workflowTemplateRef:
       name: probe-asset-level3-subdomain
