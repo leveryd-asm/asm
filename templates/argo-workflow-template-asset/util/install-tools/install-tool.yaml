@@ -9,8 +9,14 @@ spec:
       inputs:
         parameters:
           - name: tool-name
-            description: "tools to install, eg 'fofax,enscan'"
-            default: "fofax,enscan"
+            description: "tools to install, eg 'fofax,enscan,crawlergo,chromium'"
+            default: "fofax,enscan,crawlergo,chromium"
+          - name: suspend
+            description: "suspend for debug after install"
+            default: "true"
+            enum:
+              - "true"
+              - "false"
       script:
         image: busybox:glibc
         command:
@@ -38,6 +44,37 @@ spec:
             ls -al /tmp/tools/enscan
           else
             echo "ignore install enscan"
+          fi
+
+          result=$(echo {{`{{inputs.parameters.tool-name}}`}} | grep "crawlergo")
+          if [[ "$result" != "" ]]
+          then
+            wget https://github.com/Qianlitp/crawlergo/releases/download/v0.4.4/crawlergo_linux_amd64
+            mkdir -p /tmp/tools/crawlergo
+            mv crawlergo_linux_amd64 /tmp/tools/crawlergo/crawlergo
+            chmod +x /tmp/tools/crawlergo/crawlergo
+            ls -al /tmp/tools/crawlergo
+          else
+            echo "ignore install crawlergo"
+          fi
+
+          result=$(echo {{`{{inputs.parameters.tool-name}}`}} | grep "chromium")
+          then
+            wget https://registry.npmmirror.com/-/binary/chromium-browser-snapshots/Linux_x64/1108766/chrome-linux.zip
+            unzip chrome-linux.zip -d /tmp/tools/crawlergo/
+            rm chrome-linux.zip
+            ls -al /tmp/tools/crawlergo/chrome-linux
+          else
+            echo "ignore install chromium"
+          fi
+
+          result=$(echo {{`{{inputs.parameters.suspend}}`}} | grep "true")
+          if [[ "$result" != "" ]]
+          then
+              echo "suspend"
+              tail -f /dev/null
+          else
+              echo "not suspend"
           fi
 
         volumeMounts:

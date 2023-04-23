@@ -85,16 +85,24 @@ spec:
                     data: {{`"{{inputs.parameters.domains}}"`}}
 
     - name: katana-binary-from-one-url
+      volumes:
+        - name: tools
+          persistentVolumeClaim:
+            claimName: tools
       inputs:
         parameters:
           - name: url
             description: '待扫描的url，比如 https://apple.com'
       script:
         image: projectdiscovery/katana:v1.0.1
+        volumeMounts:
+          - name: tools
+            mountPath: /tmp/tools
         command:
           - "sh"
         source: |
-          katana -v -jc -aff -u '{{`{{inputs.parameters.url}}`}}' -proxy http://{{.Values.xray_proxy_service}}:{{.Values.xray_proxy_port}} -system-chrome -headless -headless-options proxy-server=http://{{.Values.xray_proxy_service}}:{{.Values.xray_proxy_port}}
+          # katana -v -jc -aff -u '{{`{{inputs.parameters.url}}`}}' -proxy http://{{.Values.xray_proxy_service}}:{{.Values.xray_proxy_port}} -system-chrome -headless -headless-options proxy-server=http://{{.Values.xray_proxy_service}}:{{.Values.xray_proxy_port}}
+          /tmp/tools/crawlergo/crawlergo --custom-headers "{\"User-Agent\": \"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.0 Safari/537.36\"}" --chromium-path /usr/lib/chromium/chrome --push-to-proxy http://{{.Values.xray_proxy_service}}:{{.Values.xray_proxy_port}} '{{`{{inputs.parameters.url}}`}}'
         resources: # limit the resources
           requests:
             cpu: 10m
