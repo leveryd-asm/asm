@@ -10,12 +10,15 @@ spec:
       labels:
         app: xray-proxy
     spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
       containers:
         - name: proxy
           image: leveryd/xray:v2023.2.21
           ports:
             - containerPort: 80
-          command: ["/bin/bash", "-c", "/tools/xray webscan --listen 0.0.0.0:80 --webhook-output http://{{.Values.xray_webhook_service}}:{{.Values.xray_webhook_port}}/webhook"]
+          command: ["/bin/bash", "-c", "/tools/xray webscan --listen 0.0.0.0:80 --webhook-output http://{{.Values.xray_webhook_service}}:{{.Values.xray_webhook_port}}/webhook --json-output /xray-output/xray.json --html-output /xray-output/xray.html"]
           resources:
             requests:
               cpu: "10m"
@@ -31,6 +34,16 @@ spec:
             - mountPath: /tools/config.yaml
               subPath: config.yaml
               name: config
+            - mountPath: /xray-output
+              name: xray-output
+        - name: logstash
+          image: logstash:7.17.3
+          command: ["sh", "-c", "logstash --api.enabled false -w 1 --log.level error -f /xray-logstash/logstash.conf"]
+          volumeMounts:
+            - mountPath: /xray-logstash
+              name: xray-output-logstash-config
+            - mountPath: /xray-output
+              name: xray-output
       volumes:
         - name: ca-crt
           configMap:
@@ -50,6 +63,12 @@ spec:
             items:
               - key: config.yaml
                 path: config.yaml
+        - name: xray-output-logstash-config
+          configMap:
+            name: xray-output-logstash-config
+        - name: xray-output
+          emptyDir: {}
+
   selector:
     matchLabels:
       app: xray-proxy

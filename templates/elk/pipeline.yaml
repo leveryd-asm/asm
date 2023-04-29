@@ -37,6 +37,7 @@ spec:
           curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/tls"
           curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/web-service"
           curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/sld"
+          curl -s -X PUT "{{.Values.kibana.elasticsearchHosts}}/xray"
 
           echo "Setting default pipeline"
 
