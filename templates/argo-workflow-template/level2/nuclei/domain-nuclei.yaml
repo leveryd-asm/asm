@@ -43,15 +43,7 @@ spec:
                   from: {{`'{{workflow.outputs.artifacts.subdomains}}'`}}
             templateRef:
               name: level1-nuclei
-              template: nuclei-scan
-        - - name: call-save-nuclei-alarm
-            arguments:
-              artifacts:
-                - from: {{`'{{steps.call-nuclei-scan.outputs.artifacts.nuclei-result}}'`}}
-                  name: result
-            templateRef:
-              name: level1-save-alarm
-              template: save-nuclei
+              template: nuclei-scan-big-file
 
     - name: 获取子域名-web服务扫描-nuclei扫描-保存结果
       inputs:
@@ -106,15 +98,7 @@ spec:
                   from: {{`'{{steps.call-httpx-scan.outputs.artifacts.urls}}'`}}
             templateRef:
               name: level1-nuclei
-              template: nuclei-scan
-        - - name: call-save-nuclei-alarm
-            arguments:
-              artifacts:
-                - from: {{`'{{steps.call-nuclei-scan.outputs.artifacts.nuclei-result}}'`}}
-                  name: result
-            templateRef:
-              name: level1-save-alarm
-              template: save-nuclei
+              template: nuclei-scan-big-file
 
     - name: nuclei扫描-保存结果    # 测试nuclei扫描后保存扫描结果
       inputs:
@@ -130,15 +114,7 @@ spec:
                     data: {{`'{{inputs.parameters.domain}}'`}}
             templateRef:
               name: level1-nuclei
-              template: nuclei-scan
-        - - name: save-nuclei
-            arguments:
-              artifacts:
-                - name: result
-                  from: {{`'{{steps.call-nuclei-scan.outputs.artifacts.nuclei-result}}'`}}
-            templateRef:
-              name: level1-save-alarm
-              template: save-nuclei
+              template: nuclei-scan-big-file
 
     - name: 获取web服务-nuclei扫描-保存结果
       inputs:
@@ -161,12 +137,5 @@ spec:
                   from: {{`'{{steps.call-get-urls-from-es.outputs.artifacts.result}}'`}}
             templateRef:
               name: level1-nuclei
-              template: nuclei-scan
-        - - name: call-save-nuclei-alarm
-            arguments:
-              artifacts:
-                - from: {{`'{{steps.call-nuclei-scan.outputs.artifacts.nuclei-result}}'`}}
-                  name: result
-            templateRef:
-              name: level1-save-alarm
-              template: save-nuclei
+              template: nuclei-scan-big-file
+

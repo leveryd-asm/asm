@@ -26,12 +26,5 @@ spec:
                   from: {{`'{{steps.call-url-from-es.outputs.artifacts.result}}'`}}
             templateRef:
               name: level1-nuclei
-              template: nuclei-scan
-        - - name: call-save-nuclei-alarm
-            arguments:
-              artifacts:
-                - from: {{`'{{steps.call-nuclei-scan.outputs.artifacts.nuclei-result}}'`}}
-                  name: result
-            templateRef:
-              name: level1-save-alarm
-              template: save-nuclei
+              template: nuclei-scan-big-file
+

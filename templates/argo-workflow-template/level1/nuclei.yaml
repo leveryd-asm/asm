@@ -12,14 +12,12 @@ spec:
             description: '域名列表，比如 apple.com<换行>twitter.com'
           - name: id
             description: 'nuclei 规则id'
-      container:
-        image: projectdiscovery/nuclei:v2.8.3
+      script:
+        image: projectdiscovery/nuclei:v2.9.4
         command:
           - sh
-        args:
-          - -c
-          - |
-            echo {{`'{{inputs.parameters.domain}}'`}} | nuclei -id {{`'{{inputs.parameters.id}}'`}} -debug -duc {{include "interactsh_server" .}}
+        source: |
+          echo {{`'{{inputs.parameters.domain}}'`}} | nuclei -id {{`'{{inputs.parameters.id}}'`}} -debug -duc {{include "interactsh_server" .}}
         volumeMounts:
           - name: template-dir
             mountPath: /root/nuclei-templates
@@ -36,32 +34,33 @@ spec:
         artifacts:
           - name: hosts
             path: /tmp/host
+        parameters:
+          - name: fname
+            default: "not_exist"
+            descript: "目录下的文件名，如果不存在，就认为是目录"
       outputs:
         artifacts:
           - name: nuclei-result
             path: /tmp/nuclei-result.json
-      container:
-        image: 'projectdiscovery/nuclei:v2.8.3'
-        command:
-          - nuclei
-        args:
-          - '-stats'
-          - '-duc'
-          - '-l'
-          - /tmp/host
-          - '-t'
-          - >-
-            exposures,misconfiguration,cnvd,vulnerabilities,workflows,exposed-panels
-          - '-es'
-          - info
+      script:
+        image: 'projectdiscovery/nuclei:v2.9.4'
+        command: ["sh"]
+        source: |
+          filePath=""
+          if [ "{{`{{inputs.parameters.fname}}`}}" = "not_exist" ]
+          then
+            filePath="/tmp/host"
+          else
+            fname=`printf "%05d" {{`{{inputs.parameters.fname}}`}}`
+            filePath="/tmp/host/$fname"
+          fi
+
           {{ if .Values.interactsh_server }}
-          - '-iserver'
-          - '{{ .Values.interactsh_server }}'
+          nuclei -rl 1000 -stats -duc -l $filePath -t exposures,misconfiguration,cnvd,vulnerabilities,workflows,exposed-panels -es info -iserver {{ .Values.interactsh_server }} -o /tmp/nuclei-result.json
           {{ else }}
-          - '-ni'
+          nuclei -rl 1000 -stats -duc -l $filePath -t exposures,misconfiguration,cnvd,vulnerabilities,workflows,exposed-panels -es info -ni -o /tmp/nuclei-result.json
           {{ end }}
-          - '-o'
-          - /tmp/nuclei-result.json
+
         volumeMounts:
           - name: template-dir
             mountPath: /root/nuclei-templates
@@ -69,3 +68,79 @@ spec:
         - name: template-dir
           persistentVolumeClaim:
             claimName: nuclei-template
+
+    - name: nuclei-scan-big-file
+      inputs:
+        artifacts:
+          - name: hosts
+      volumes:
+        - name: output
+          emptyDir: {}
+      parallelism: 3
+      steps:
+        - - name: split
+            arguments:
+              artifacts:
+                - name: hosts
+                  from: {{`"{{inputs.artifacts.hosts}}"`}}
+            template: x-split
+        - - name: nuclei
+            arguments:
+              artifacts:
+                - name: hosts
+                  from: {{`"{{steps.split.outputs.artifacts.nuclei-result}}"`}}
+              parameters:
+                - name: index
+                  value: {{`"{{item}}"`}}
+            template: x-nuclei-scan-save
+            withSequence:
+              count: {{`"{{steps.split.outputs.parameters.count}}"`}}
+
+    - name: x-nuclei-scan-save
+      inputs:
+        artifacts:
+          - name: hosts
+        parameters:
+          - name: index
+            default: "/tmp/output/00000"
+      steps:
+        - - name: nuclei
+            arguments:
+              artifacts:
+                - name: hosts
+                  from: {{`"{{inputs.artifacts.hosts}}"`}}
+              parameters:
+                - name: fname
+                  value: {{`"{{inputs.parameters.index}}"`}}
+            template: nuclei-scan
+        - - name: save
+            arguments:
+              artifacts:
+                - name: result
+                  from: {{`"{{steps.nuclei.outputs.artifacts.nuclei-result}}"`}}
+            templateRef:
+              name: level1-save-alarm
+              template: save-nuclei
+
+    - name: x-split
+      inputs:
+        artifacts:
+          - name: hosts
+            path: /tmp/host
+      outputs:
+        artifacts:
+          - name: nuclei-result
+            path: /tmp/output
+        parameters:
+          - name: count
+            valueFrom:
+              path: /tmp/count
+      script:
+        image: ubuntu:lunar-20221207
+        command: [sh]
+        source: |
+          mkdir /tmp/output && cd /tmp/output
+          split -a 5 -d -l 100 /tmp/host ""    # 每个文件100行，最多100000 * 100 = 1kw行
+
+          count=`find . -type f | wc -l`
+          echo $count > /tmp/count

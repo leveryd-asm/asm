@@ -18,7 +18,7 @@ spec:
           - name: nuclei-result
             path: /tmp/nuclei-result.json
       script:
-        image: 'projectdiscovery/nuclei:v2.8.3'
+        image: 'projectdiscovery/nuclei:v2.9.4'
         command: [sh]
         source: |
           nuclei -duc -l /tmp/host -stats -tags {{`{{workflow.parameters.tags}} `}} -ni -o /tmp/nuclei-result.json

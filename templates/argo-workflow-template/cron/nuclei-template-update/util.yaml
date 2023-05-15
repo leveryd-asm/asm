@@ -17,7 +17,7 @@ spec:
           - name: force-update
             default: false
       script:
-        image: projectdiscovery/nuclei:v2.8.3
+        image: projectdiscovery/nuclei:v2.9.4
         command:
           - 'sh'
         source: |
@@ -38,7 +38,7 @@ spec:
 
     - name: lookup-nuclei-template
       script:
-        image: projectdiscovery/nuclei:v2.8.3
+        image: projectdiscovery/nuclei:v2.9.4
         command:
           - 'sh'
         source: |
