@@ -29,6 +29,9 @@ spec:
             - name: MINIO_SECRET_KEY
               value: password
           image: minio/minio
+          volumeMounts:
+            - mountPath: /data
+              name: data
           lifecycle:
             postStart:
               exec:
@@ -54,6 +57,10 @@ spec:
               port: 9000
             initialDelaySeconds: 5
             periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: minio-data
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -126,3 +133,17 @@ spec:
       targetPort: 5432
   selector:
     app: postgres
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  finalizers:
+    - kubernetes.io/pvc-protection
+  name: minio-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: local
